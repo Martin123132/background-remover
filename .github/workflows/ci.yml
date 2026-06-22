@@ -15,9 +15,6 @@ jobs:
   check:
     name: Lint and build
     runs-on: ubuntu-latest
-    env:
-      npm_config_cache: ${{ runner.temp }}/npm-cache
-      NPM_CONFIG_CACHE: ${{ runner.temp }}/npm-cache
 
     steps:
       - name: Check out repository
@@ -29,6 +26,9 @@ jobs:
           node-version: 24
 
       - name: Install dependencies
+        env:
+          npm_config_cache: /tmp/background-remover-npm-cache
+          NPM_CONFIG_CACHE: /tmp/background-remover-npm-cache
         run: npm ci
 
       - name: Run checks
