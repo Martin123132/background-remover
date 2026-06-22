@@ -1,8 +1,9 @@
 /* global HTMLImageElement, console, document, process */
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
+import { chromium } from "playwright-core";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
@@ -11,12 +12,7 @@ const downloadDir = path.join(artifactDir, "downloads");
 const screenshotPath = path.join(artifactDir, "preview-performance-result.png");
 const selectedPath = path.join(artifactDir, "download-marketplace-2000.png");
 const zipPath = path.join(artifactDir, "background-remover-marketplace-2000.zip");
-const defaultPlaywrightRoot =
-  "C:/Users/ollet/AppData/Local/OpenAI/Codex/runtimes/cua_node/1b23c930bdf84ed6/bin/node_modules/playwright";
-const playwrightRoot = process.env.PLAYWRIGHT_MODULE_PATH || defaultPlaywrightRoot;
-const edgePath =
-  process.env.BROWSER_EXECUTABLE_PATH ||
-  "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
+const browserExecutablePath = process.env.BROWSER_EXECUTABLE_PATH;
 const inputImage =
   process.env.BACKGROUND_REMOVER_TEST_IMAGE || "D:/Users/ollet/Desktop/download.webp";
 const url = process.env.BACKGROUND_REMOVER_QA_URL || "http://127.0.0.1:5175/";
@@ -65,16 +61,16 @@ async function imageInfo(page, selector) {
 
 async function main() {
   assert(projectRoot.startsWith("D:\\"), `Project root must be on D:. Current root: ${projectRoot}`);
-  assert(fs.existsSync(playwrightRoot), `Playwright module not found: ${playwrightRoot}`);
-  assert(fs.existsSync(edgePath), `Browser executable not found: ${edgePath}`);
+  if (browserExecutablePath) {
+    assert(fs.existsSync(browserExecutablePath), `Browser executable not found: ${browserExecutablePath}`);
+  }
   assert(fs.existsSync(inputImage), `Missing test image: ${inputImage}`);
 
-  const { chromium } = await import(pathToFileURL(path.join(playwrightRoot, "index.mjs")).href);
   const errors = [];
   const warnings = [];
   const failedRequests = [];
   const browser = await chromium.launch({
-    executablePath: edgePath,
+    ...(browserExecutablePath ? { executablePath: browserExecutablePath } : { channel: "msedge" }),
     headless: true,
     downloadsPath: downloadDir,
   });

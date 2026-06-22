@@ -85,8 +85,7 @@ Supported overrides:
 
 - `BACKGROUND_REMOVER_QA_URL`: run against a different local app URL.
 - `BACKGROUND_REMOVER_TEST_IMAGE`: use a different local fixture image.
-- `BROWSER_EXECUTABLE_PATH`: use a different Chromium-family browser executable.
-- `PLAYWRIGHT_MODULE_PATH`: use a different local Playwright module path.
+- `BROWSER_EXECUTABLE_PATH`: use a different Chromium-family browser executable. This path is only used to launch the browser; QA downloads and artifacts still stay under this repo on `D:`.
 
 Clean QA artifacts with:
 
