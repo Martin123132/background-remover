@@ -23,12 +23,9 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
 
       - name: Install dependencies
-        env:
-          npm_config_cache: /tmp/background-remover-npm-cache
-          NPM_CONFIG_CACHE: /tmp/background-remover-npm-cache
         run: npm ci
 
       - name: Run checks
