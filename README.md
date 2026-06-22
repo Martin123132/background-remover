@@ -1,5 +1,7 @@
 # Background Remover
 
+[![CI](https://github.com/Martin123132/background-remover/actions/workflows/ci.yml/badge.svg)](https://github.com/Martin123132/background-remover/actions/workflows/ci.yml)
+
 An AGPL local-first background remover aimed at replacing credit-based background removal subscriptions for everyday product, creator, and marketplace workflows.
 
 ## What it does
@@ -101,6 +103,10 @@ src/lib/                          Background removal, file, and export helpers
 scripts/                          D-drive-safe setup, dev, model, and QA scripts
 public/models/background-removal/ Downloaded model and WASM assets, ignored except .gitkeep
 ```
+
+## Contributing and security
+
+See `CONTRIBUTING.md` for setup, QA, and pull request guidance. See `SECURITY.md` for vulnerability reporting and the project security goals.
 
 ## License
 
