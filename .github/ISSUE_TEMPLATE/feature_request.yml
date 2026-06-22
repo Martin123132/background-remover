@@ -1,0 +1,39 @@
+name: Feature request
+description: Suggest a local-first product improvement.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What workflow should this improve?
+      description: Explain the real task, not only the UI idea.
+      placeholder: I need to process product photos for...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the smallest useful version of the feature.
+      placeholder: Add an export preset for...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional. Mention workarounds or related tools.
+
+  - type: checkboxes
+    id: posture
+    attributes:
+      label: Project fit
+      options:
+        - label: This can work without uploading source images to a server.
+          required: true
+        - label: This does not require proprietary cloud credits or hosted-only assets.
+          required: true
