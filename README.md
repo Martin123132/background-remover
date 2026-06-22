@@ -58,6 +58,8 @@ This repo is intentionally rooted on `D:\open-source\background-remover`. The Po
 
 Generated folders and build outputs are intentionally ignored by Git: `.cache/`, `.tmp/`, `dist/`, `outputs/`, `node_modules/`, and downloaded files under `public/models/background-removal/`.
 
+See `docs/D_DRIVE_POLICY.md` for the full local storage policy.
+
 ## Testing
 
 Run the preview/export regression check with:
@@ -107,6 +109,8 @@ public/models/background-removal/ Downloaded model and WASM assets, ignored exce
 ## Contributing and security
 
 See `CONTRIBUTING.md` for setup, QA, and pull request guidance. See `SECURITY.md` for vulnerability reporting and the project security goals.
+
+See `ROADMAP.md` for planned work and `CHANGELOG.md` for release history.
 
 ## License
 
