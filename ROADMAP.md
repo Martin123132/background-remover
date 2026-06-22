@@ -6,14 +6,13 @@ This roadmap favors local-first workflows that can replace credit-based backgrou
 
 - Keep CI, contributor docs, and security posture healthy.
 - Preserve the D-drive storage rule for local development and QA artifacts.
-- Make batch processing easier to trust with clearer queue state and export feedback.
+- Keep batch processing easy to trust with clear queue state and export feedback.
 
 ## Next
 
-- Polish batch workflow controls for larger image sets.
 - Add better before/after comparison controls for reviewing edge quality.
 - Add export preset documentation with examples for marketplace and creator workflows.
-- Add a public demo screenshot or short capture that does not use private or sensitive source images.
+- Add a richer public demo capture that does not use private or sensitive source images.
 
 ## Later
 

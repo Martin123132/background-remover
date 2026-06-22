@@ -1,4 +1,5 @@
 import {
+  AlertCircle,
   Check,
   Cpu,
   Download,
@@ -36,7 +37,13 @@ import {
   type ExportPresetId,
   type ExportSceneId,
 } from "./lib/exportPresets";
-import { downloadBlob, downloadZip, formatBytes, outputFilename } from "./lib/files";
+import {
+  batchZipFilename,
+  downloadBlob,
+  downloadZip,
+  formatBytes,
+  outputFilename,
+} from "./lib/files";
 
 type JobStatus = "ready" | "processing" | "done" | "error";
 type PreviewBackground = "checker" | "white" | "black" | "brand" | "custom";
@@ -119,9 +126,12 @@ function App() {
   );
 
   const stats = useMemo(() => {
+    const ready = jobs.filter((job) => job.status === "ready").length;
     const done = jobs.filter((job) => job.status === "done").length;
+    const error = jobs.filter((job) => job.status === "error").length;
     const processing = jobs.filter((job) => job.status === "processing").length;
-    return { done, processing, total: jobs.length };
+    const processable = ready + error;
+    return { done, error, processing, processable, ready, total: jobs.length };
   }, [jobs]);
 
   const exportPreset = getExportPreset(exportPresetId);
@@ -272,7 +282,15 @@ function App() {
   };
 
   const processQueuedJobs = async () => {
-    const queue = jobs.filter((job) => job.status !== "processing");
+    const queue = jobs.filter((job) => job.status === "ready" || job.status === "error");
+
+    for (const job of queue) {
+      await processJob(job);
+    }
+  };
+
+  const retryFailedJobs = async () => {
+    const queue = jobs.filter((job) => job.status === "error");
 
     for (const job of queue) {
       await processJob(job);
@@ -304,7 +322,7 @@ function App() {
     }
   };
 
-  const downloadAll = async () => {
+  const downloadProcessedZip = async () => {
     const doneJobs = jobs.filter((job) => job.outputBlob);
 
     if (doneJobs.length === 0) return;
@@ -322,7 +340,7 @@ function App() {
         }))
       );
 
-      await downloadZip(files, `background-remover-${exportPreset.suffix}.zip`);
+      await downloadZip(files, batchZipFilename(exportPreset.suffix, files.length));
     } finally {
       setIsZipping(false);
     }
@@ -535,7 +553,7 @@ function App() {
           <div className="action-row">
             <button
               className="primary-button"
-              disabled={jobs.length === 0 || stats.processing > 0}
+              disabled={stats.processable === 0 || stats.processing > 0}
               onClick={processQueuedJobs}
               type="button"
             >
@@ -545,11 +563,20 @@ function App() {
             <button
               className="secondary-button"
               disabled={stats.done === 0 || isZipping || isExportingSelected}
-              onClick={downloadAll}
+              onClick={downloadProcessedZip}
               type="button"
             >
               {isZipping ? <Loader2 className="spin" size={18} /> : <Package size={18} />}
-              ZIP export
+              Export processed ZIP
+            </button>
+            <button
+              className="ghost-button"
+              disabled={stats.error === 0 || stats.processing > 0}
+              onClick={retryFailedJobs}
+              type="button"
+            >
+              <RefreshCw size={17} />
+              Retry failed
             </button>
           </div>
 
@@ -693,8 +720,42 @@ function App() {
           <div className="queue-header">
             <h2>Queue</h2>
             <span>
-              {stats.done}/{stats.total} done
+              {stats.done}/{stats.total} processed
+              {stats.error > 0 ? ` - ${stats.error} failed` : ""}
             </span>
+          </div>
+
+          <div className="queue-tools" aria-label="Batch queue controls">
+            <button
+              className="queue-tool"
+              disabled={stats.processable === 0 || stats.processing > 0}
+              onClick={processQueuedJobs}
+              type="button"
+            >
+              <Sparkles size={15} />
+              To process
+              <span>{stats.processable}</span>
+            </button>
+            <button
+              className="queue-tool"
+              disabled={stats.error === 0 || stats.processing > 0}
+              onClick={retryFailedJobs}
+              type="button"
+            >
+              <AlertCircle size={15} />
+              Failed
+              <span>{stats.error}</span>
+            </button>
+            <button
+              className="queue-tool"
+              disabled={stats.done === 0 || isZipping || isExportingSelected}
+              onClick={downloadProcessedZip}
+              type="button"
+            >
+              <Package size={15} />
+              Processed
+              <span>{stats.done}</span>
+            </button>
           </div>
 
           <div className="queue-list">
@@ -726,7 +787,7 @@ function App() {
                     className="queue-action"
                     disabled={job.status === "processing"}
                     onClick={() => processJob(job)}
-                    title="Reprocess image"
+                    title={job.status === "error" ? "Retry image" : "Reprocess image"}
                     type="button"
                   >
                     {job.status === "processing" ? (

@@ -101,12 +101,14 @@ async function main() {
       title: await page.title(),
       sceneCards: await page.locator(".scene-card").count(),
       presetCards: await page.locator(".preset-card").count(),
+      queueTools: await page.locator(".queue-tool").count(),
       rangeFields: await page.locator(".range-field input").count(),
       overlayText: await page.getByText("Failed to compile").count(),
     };
     assert(identity.title === "Background Remover", `Unexpected title: ${identity.title}`);
     assert(identity.sceneCards === 5, `Unexpected scene count: ${identity.sceneCards}`);
     assert(identity.presetCards === 4, `Unexpected preset count: ${identity.presetCards}`);
+    assert(identity.queueTools === 3, `Unexpected queue tool count: ${identity.queueTools}`);
     assert(identity.rangeFields === 3, `Unexpected range field count: ${identity.rangeFields}`);
     assert(identity.overlayText === 0, "Framework error overlay detected.");
 
@@ -159,6 +161,11 @@ async function main() {
       page.waitForEvent("download", { timeout: 30000 }),
       page.locator(".action-row .secondary-button").click(),
     ]);
+    const zipSuggestedFilename = zipDownload.suggestedFilename();
+    assert(
+      zipSuggestedFilename === "background-remover-marketplace-2000-1-image.zip",
+      `Unexpected ZIP filename: ${zipSuggestedFilename}`
+    );
     await zipDownload.saveAs(zipPath);
     const zipBuffer = fs.readFileSync(zipPath);
     const zip = await JSZip.loadAsync(zipBuffer);
@@ -184,6 +191,7 @@ async function main() {
       previewInfo,
       selectedDimensions,
       selectedSize: selectedBuffer.length,
+      zipSuggestedFilename,
       zipEntries: entries,
       zippedDimensions,
       zipSize: zipBuffer.length,

@@ -28,6 +28,11 @@ export function outputFilename(inputName: string, suffix = "cutout"): string {
   return `${base}-${suffix}.png`;
 }
 
+export function batchZipFilename(suffix: string, count: number): string {
+  const countLabel = count === 1 ? "1-image" : `${count}-images`;
+  return `background-remover-${suffix}-${countLabel}.zip`;
+}
+
 export async function downloadZip(
   files: Array<{ blob: Blob; filename: string }>,
   filename = "background-remover-cutouts.zip"

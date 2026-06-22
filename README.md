@@ -4,12 +4,18 @@
 
 An AGPL local-first background remover aimed at replacing credit-based background removal subscriptions for everyday product, creator, and marketplace workflows.
 
+![Background Remover demo](docs/assets/background-remover-demo.svg)
+
+The demo graphic above uses a generated product illustration, not a private or personal source image.
+
 ## What it does
 
 - Removes image backgrounds in the browser.
 - Keeps source images local; there is no upload step.
 - Exports transparent PNGs with no watermark.
 - Adds product-photo backgrounds, marketplace export presets, shadows, and ZIP export.
+- Exports completed batch items separately from pending or failed queue items.
+- Names ZIP exports with the selected preset and processed image count.
 - Uses self-hosted model/WASM assets from `public/models/background-removal`.
 
 ## Requirements
