@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.vite/
+.cache/
+.tmp/
+outputs/
+*.log
+*.tgz
+*.tsbuildinfo
+public/models/background-removal/*
+!public/models/background-removal/.gitkeep
