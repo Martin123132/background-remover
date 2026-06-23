@@ -88,6 +88,15 @@ const modeLabels: Record<RemovalMode, { label: string; detail: string }> = {
 const PREVIEW_MAX_DIMENSION = 900;
 const PREVIEW_RENDER_DEBOUNCE_MS = 180;
 const SETTINGS_STORAGE_KEY = "background-remover-ui-settings-v1";
+const SHADOW_INTENSITY_DEFAULT = 45;
+const SHADOW_BLUR_DEFAULT = 28;
+const SHADOW_OFFSET_DEFAULT = 24;
+const SHADOW_INTENSITY_MIN = 10;
+const SHADOW_INTENSITY_MAX = 100;
+const SHADOW_BLUR_MIN = 6;
+const SHADOW_BLUR_MAX = 56;
+const SHADOW_OFFSET_MIN = -20;
+const SHADOW_OFFSET_MAX = 80;
 const DEFAULT_UI_SETTINGS: Required<StoredUISettings> = {
   mode: "balanced",
   executionDevice: "cpu",
@@ -96,10 +105,31 @@ const DEFAULT_UI_SETTINGS: Required<StoredUISettings> = {
   exportPresetId: "transparent",
   exportSceneId: "transparent",
   exportShadow: false,
-  shadowIntensity: 45,
-  shadowBlur: 28,
-  shadowOffset: 24,
+  shadowIntensity: SHADOW_INTENSITY_DEFAULT,
+  shadowBlur: SHADOW_BLUR_DEFAULT,
+  shadowOffset: SHADOW_OFFSET_DEFAULT,
 };
+declare global {
+  interface Window {
+    __BACKGROUND_REMOVER_UI_DEFAULTS?: {
+      mode: RemovalMode;
+      executionDevice: ExecutionDevice;
+      background: PreviewBackground;
+      customBackground: string;
+      exportPresetId: ExportPresetId;
+      exportSceneId: ExportSceneId;
+      exportShadow: boolean;
+      shadowIntensity: number;
+      shadowBlur: number;
+      shadowOffset: number;
+      sliders: {
+        intensity: { min: number; max: number };
+        blur: { min: number; max: number };
+        offset: { min: number; max: number };
+      };
+    };
+  }
+}
 
 type StoredUISettings = {
   mode?: RemovalMode;
@@ -171,19 +201,32 @@ function readPersistedSettings(): StoredUISettings {
     if (isExportSceneId(parsed.exportSceneId)) next.exportSceneId = parsed.exportSceneId;
     if (typeof parsed.exportShadow === "boolean") next.exportShadow = parsed.exportShadow;
     if (typeof parsed.shadowIntensity === "number") {
-      next.shadowIntensity = clampNumber(parsed.shadowIntensity, 10, 100);
+      next.shadowIntensity = clampNumber(parsed.shadowIntensity, SHADOW_INTENSITY_MIN, SHADOW_INTENSITY_MAX);
     }
     if (typeof parsed.shadowBlur === "number") {
-      next.shadowBlur = clampNumber(parsed.shadowBlur, 6, 56);
+      next.shadowBlur = clampNumber(parsed.shadowBlur, SHADOW_BLUR_MIN, SHADOW_BLUR_MAX);
     }
     if (typeof parsed.shadowOffset === "number") {
-      next.shadowOffset = clampNumber(parsed.shadowOffset, -20, 80);
+      next.shadowOffset = clampNumber(parsed.shadowOffset, SHADOW_OFFSET_MIN, SHADOW_OFFSET_MAX);
     }
 
     return next;
   } catch {
     return {};
   }
+}
+
+function publishUiDefaultsToWindow() {
+  if (typeof window === "undefined") return;
+
+  window.__BACKGROUND_REMOVER_UI_DEFAULTS = {
+    ...DEFAULT_UI_SETTINGS,
+    sliders: {
+      intensity: { min: SHADOW_INTENSITY_MIN, max: SHADOW_INTENSITY_MAX },
+      blur: { min: SHADOW_BLUR_MIN, max: SHADOW_BLUR_MAX },
+      offset: { min: SHADOW_OFFSET_MIN, max: SHADOW_OFFSET_MAX },
+    },
+  };
 }
 
 function createJob(file: File): ImageJob {
@@ -201,6 +244,10 @@ function revokeObjectUrlSoon(url?: string) {
 }
 
 function App() {
+  useEffect(() => {
+    publishUiDefaultsToWindow();
+  }, []);
+
   const persistedSettings = useMemo(() => readPersistedSettings(), []);
 
   const [jobs, setJobs] = useState<ImageJob[]>([]);
@@ -749,6 +796,7 @@ function App() {
                 <button
                   className={exportPresetId === preset.id ? "preset-card selected" : "preset-card"}
                   key={preset.id}
+                  data-preset-id={preset.id}
                   onClick={() => setExportPresetId(preset.id)}
                   type="button"
                 >
@@ -769,6 +817,7 @@ function App() {
                 <button
                   className={exportSceneId === scene.id ? "scene-card selected" : "scene-card"}
                   key={scene.id}
+                  data-scene-id={scene.id}
                   onClick={() => {
                     setExportSceneId(scene.id);
                     if (scene.id === "transparent") setExportShadow(false);
@@ -804,13 +853,13 @@ function App() {
             <label className="range-field">
               <span>Shadow strength</span>
               <strong>{shadowIntensity}%</strong>
-              <input
-                type="range"
-                min="10"
-                max="100"
-                value={shadowIntensity}
-                disabled={!exportShadow || exportSceneId === "transparent"}
-                onChange={(event) => setShadowIntensity(Number(event.target.value))}
+                <input
+                  type="range"
+                  min={SHADOW_INTENSITY_MIN}
+                  max={SHADOW_INTENSITY_MAX}
+                  value={shadowIntensity}
+                  disabled={!exportShadow || exportSceneId === "transparent"}
+                  onChange={(event) => setShadowIntensity(Number(event.target.value))}
               />
             </label>
 
@@ -820,8 +869,8 @@ function App() {
                 <strong>{shadowBlur}px</strong>
                 <input
                   type="range"
-                  min="6"
-                  max="56"
+                  min={SHADOW_BLUR_MIN}
+                  max={SHADOW_BLUR_MAX}
                   value={shadowBlur}
                   disabled={!exportShadow || exportSceneId === "transparent"}
                   onChange={(event) => setShadowBlur(Number(event.target.value))}
@@ -832,8 +881,8 @@ function App() {
                 <strong>{shadowOffset}px</strong>
                 <input
                   type="range"
-                  min="-20"
-                  max="80"
+                  min={SHADOW_OFFSET_MIN}
+                  max={SHADOW_OFFSET_MAX}
                   value={shadowOffset}
                   disabled={!exportShadow || exportSceneId === "transparent"}
                   onChange={(event) => setShadowOffset(Number(event.target.value))}

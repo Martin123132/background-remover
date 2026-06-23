@@ -119,6 +119,12 @@ async function main() {
       "Reset preferences control missing."
     );
 
+    const defaults = await page.evaluate(() => window.__BACKGROUND_REMOVER_UI_DEFAULTS);
+    assert(defaults, "Missing UI defaults export from app.");
+    assert(defaults.exportPresetId, "Missing default export preset id.");
+    assert(defaults.exportSceneId, "Missing default export scene id.");
+    assert(defaults.sliders?.intensity?.min !== undefined, "Missing shadow intensity slider limits.");
+
     await page.locator('input[type="file"]').setInputFiles(inputImage);
     await page.getByRole("button", { name: "Remove backgrounds" }).click();
     await page.locator(".comparison-output").waitFor({ state: "visible", timeout: 180000 });
@@ -187,8 +193,8 @@ async function main() {
     await page.screenshot({ path: screenshotPath, fullPage: false });
 
     await page.locator('button', { hasText: "Reset preferences" }).click();
-    await assertSelectedCardContains(page, ".preset-card", "Transparent PNG", 30000);
-    await assertSelectedCardContains(page, ".scene-card", "Cutout", 30000);
+    await assertSelectedCardHasId(page, ".preset-card", `data-preset-id=${defaults.exportPresetId}`, 30000);
+    await assertSelectedCardHasId(page, ".scene-card", `data-scene-id=${defaults.exportSceneId}`, 30000);
     const shadowInput = page.locator(".toggle-row input");
     const shadowChecked = await shadowInput.isChecked();
     const shadowDisabled = await shadowInput.isDisabled();
@@ -198,9 +204,9 @@ async function main() {
     assert(await firstSlider.isDisabled(), "Shadow controls should be disabled for transparent scene after reset.");
     assert(await secondSlider.isDisabled(), "Shadow blur should be disabled for transparent scene after reset.");
     assert(await thirdSlider.isDisabled(), "Shadow offset should be disabled for transparent scene after reset.");
-    assert((await firstSlider.inputValue()) === "45", "Shadow strength should reset to 45.");
-    assert((await secondSlider.inputValue()) === "28", "Shadow blur should reset to 28.");
-    assert((await thirdSlider.inputValue()) === "24", "Shadow offset should reset to 24.");
+    assert((await firstSlider.inputValue()) === String(defaults.shadowIntensity), "Shadow strength should reset to default.");
+    assert((await secondSlider.inputValue()) === String(defaults.shadowBlur), "Shadow blur should reset to default.");
+    assert((await thirdSlider.inputValue()) === String(defaults.shadowOffset), "Shadow offset should reset to default.");
     assert(!shadowChecked, "Reset preferences should disable and clear product shadow.");
     assert(shadowDisabled, "Shadow control should be disabled for transparent scene after reset.");
 
@@ -234,23 +240,23 @@ async function main() {
   }
 }
 
-async function assertSelectedCardContains(page, selector, expectedText, timeout = 10000) {
+async function assertSelectedCardHasId(page, selector, attributeSelector, timeout = 10000) {
   const found = await page.waitForFunction(
     (args) => {
-      const [selector, expectedText] = args;
+      const [selector, attributeSelector] = args;
       const cards = Array.from(document.querySelectorAll(selector));
 
       return cards.some(
         (card) =>
           card instanceof HTMLElement &&
           card.classList.contains("selected") &&
-          card.textContent?.includes(expectedText)
+          card.matches(`[${attributeSelector}]`)
       );
     },
-    [selector, expectedText],
+    [selector, attributeSelector],
     { timeout }
   );
-  assert(found !== null, `Expected selected ${selector} to include ${expectedText}.`);
+  assert(found !== null, `Expected selected ${selector} with selector [${attributeSelector}].`);
 }
 
 main().catch((error) => {
