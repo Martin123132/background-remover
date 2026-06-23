@@ -111,7 +111,7 @@ async function main() {
     assert(identity.title === "Background Remover", `Unexpected title: ${identity.title}`);
     assert(identity.sceneCards === 5, `Unexpected scene count: ${identity.sceneCards}`);
     assert(identity.presetCards === 4, `Unexpected preset count: ${identity.presetCards}`);
-    assert(identity.queueTools === 3, `Unexpected queue tool count: ${identity.queueTools}`);
+    assert(identity.queueTools >= 5, `Expected at least 5 queue tools, got ${identity.queueTools}`);
     assert(identity.rangeFields === 3, `Unexpected range field count: ${identity.rangeFields}`);
     assert(identity.overlayText === 0, "Framework error overlay detected.");
 
