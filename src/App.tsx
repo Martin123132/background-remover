@@ -1187,30 +1187,33 @@ function App() {
               className="queue-tool"
               disabled={stats.processable === 0 || stats.processing > 0}
               onClick={processQueuedJobs}
+              title="Process all ready and failed items"
               type="button"
             >
               <Sparkles size={15} />
-              To process
+              Process queue
               <span>{stats.processable}</span>
             </button>
             <button
               className="queue-tool"
               disabled={stats.error === 0 || stats.processing > 0}
               onClick={retryFailedJobs}
+              title="Retry all failed items"
               type="button"
             >
               <AlertCircle size={15} />
-              Failed
+              Retry failed
               <span>{stats.error}</span>
             </button>
             <button
               className="queue-tool"
               disabled={stats.done === 0 || isZipping || isExportingSelected}
               onClick={downloadProcessedZip}
+              title="Export processed items to ZIP"
               type="button"
             >
               <Package size={15} />
-              Processed
+              Export processed ZIP
               <span>{stats.done}</span>
             </button>
             <button
