@@ -922,7 +922,12 @@ function App() {
           <div className="action-row">
             <button
               className="primary-button"
-              disabled={stats.processable === 0 || stats.processing > 0}
+              disabled={stats.processable === 0 || hasProcessingJobs}
+              title={
+                hasProcessingJobs
+                  ? "Batch processing is running."
+                  : "Process all ready and failed items in queue"
+              }
               onClick={processQueuedJobs}
               type="button"
             >
@@ -931,7 +936,8 @@ function App() {
             </button>
             <button
               className="secondary-button"
-              disabled={stats.done === 0 || isZipping || isExportingSelected}
+              disabled={stats.done === 0 || isZipping || isExportingSelected || hasProcessingJobs}
+              title={hasProcessingJobs ? "Batch processing is running." : "Export all processed items in ZIP"}
               onClick={downloadProcessedZip}
               type="button"
             >
@@ -940,7 +946,8 @@ function App() {
             </button>
             <button
               className="ghost-button"
-              disabled={stats.error === 0 || stats.processing > 0}
+              disabled={stats.error === 0 || hasProcessingJobs}
+              title={hasProcessingJobs ? "Batch processing is running." : "Retry all failed items"}
               onClick={retryFailedJobs}
               type="button"
             >
@@ -948,6 +955,12 @@ function App() {
               Retry failed
             </button>
           </div>
+
+          {hasProcessingJobs ? (
+            <div className="queue-processing-banner" role="status">
+              Batch processing is running. Processing controls are temporarily locked.
+            </div>
+          ) : null}
 
           <div className="privacy-strip">
             <span>
