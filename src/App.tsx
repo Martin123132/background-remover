@@ -124,11 +124,6 @@ function App() {
   const jobsRef = useRef<ImageJob[]>([]);
   const composedPreviewUrlRef = useRef<string | undefined>(undefined);
 
-  const selectedJob = useMemo(
-    () => jobs.find((job) => job.id === selectedId) ?? jobs[0],
-    [jobs, selectedId]
-  );
-
   const stats = useMemo(() => {
     const ready = jobs.filter((job) => job.status === "ready").length;
     const done = jobs.filter((job) => job.status === "done").length;
@@ -145,6 +140,39 @@ function App() {
 
     return jobs.filter((job) => job.status === queueFilter);
   }, [jobs, queueFilter]);
+
+  const visibleCount = visibleJobs.length;
+  const selectedJob = useMemo(() => {
+    const currentSelection = jobs.find((job) => job.id === selectedId);
+    if (currentSelection) {
+      return visibleJobs.includes(currentSelection) ? currentSelection : visibleJobs[0];
+    }
+
+    return visibleJobs[0] ?? jobs[0] ?? null;
+  }, [jobs, selectedId, visibleJobs]);
+
+  useEffect(() => {
+    if (stats.total === 0) {
+      setQueueFilter("all");
+      return;
+    }
+
+    if (queueFilter !== "all" && visibleCount === 0) {
+      setQueueFilter("all");
+    }
+  }, [stats.total, queueFilter, visibleCount]);
+
+  const visibleStatsLabel = useMemo(() => {
+    const filterLabelMap: Record<QueueFilter, string> = {
+      all: "all",
+      ready: "ready",
+      processing: "processing",
+      done: "done",
+      error: "failed",
+    };
+
+    return `${visibleCount} ${filterLabelMap[queueFilter]} ${visibleCount === 1 ? "item" : "items"} shown`;
+  }, [visibleCount, queueFilter]);
 
   const exportPreset = getExportPreset(exportPresetId);
   const exportComposition = useMemo<ExportComposition>(
@@ -766,8 +794,7 @@ function App() {
           <div className="queue-header">
             <h2>Queue</h2>
             <span>
-              {stats.done}/{stats.total} processed
-              {stats.error > 0 ? ` - ${stats.error} failed` : ""}
+              {visibleStatsLabel}
             </span>
           </div>
           <div className="queue-filters" aria-label="Queue status filter">
