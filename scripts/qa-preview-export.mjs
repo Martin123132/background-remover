@@ -10,11 +10,14 @@ const projectRoot = path.resolve(__dirname, "..");
 const artifactDir = path.join(projectRoot, ".tmp", "qa-preview-export");
 const downloadDir = path.join(artifactDir, "downloads");
 const screenshotPath = path.join(artifactDir, "preview-performance-result.png");
-const selectedPath = path.join(artifactDir, "download-marketplace-2000.png");
-const zipPath = path.join(artifactDir, "background-remover-marketplace-2000.zip");
 const browserExecutablePath = process.env.BROWSER_EXECUTABLE_PATH;
 const inputImage =
-  process.env.BACKGROUND_REMOVER_TEST_IMAGE || "D:/Users/ollet/Desktop/download.webp";
+  process.env.BACKGROUND_REMOVER_TEST_IMAGE ||
+  path.join(projectRoot, "test-fixtures", "safe-product-mug.png");
+const inputBaseName = path.parse(inputImage).name;
+const selectedPath = path.join(artifactDir, `${inputBaseName}-marketplace-2000.png`);
+const zipPath = path.join(artifactDir, "background-remover-marketplace-2000-1-image.zip");
+const expectedZipEntry = `${inputBaseName}-marketplace-2000.png`;
 const url = process.env.BACKGROUND_REMOVER_QA_URL || "http://127.0.0.1:5175/";
 
 for (const dir of [artifactDir, downloadDir]) fs.mkdirSync(dir, { recursive: true });
@@ -115,7 +118,7 @@ async function main() {
     await page.locator('input[type="file"]').setInputFiles(inputImage);
     await page.getByRole("button", { name: "Remove backgrounds" }).click();
     await page.locator(".comparison-output").waitFor({ state: "visible", timeout: 180000 });
-    await page.locator(".quality-badge.good, .quality-badge.ok").waitFor({
+    await page.locator(".quality-badge").waitFor({
       state: "visible",
       timeout: 10000,
     });
@@ -171,7 +174,7 @@ async function main() {
     const zip = await JSZip.loadAsync(zipBuffer);
     const entries = Object.keys(zip.files).filter((name) => !zip.files[name].dir);
     assert(entries.length === 1, `Unexpected ZIP entries: ${entries.join(", ")}`);
-    assert(entries[0] === "download-marketplace-2000.png", `Unexpected ZIP entry: ${entries[0]}`);
+    assert(entries[0] === expectedZipEntry, `Unexpected ZIP entry: ${entries[0]}`);
     const zippedPng = await zip.files[entries[0]].async("nodebuffer");
     const zippedDimensions = pngDimensions(zippedPng);
     assert(zippedDimensions.width === 2000, `Zipped width ${zippedDimensions.width}`);

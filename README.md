@@ -4,9 +4,9 @@
 
 An AGPL local-first background remover aimed at replacing credit-based background removal subscriptions for everyday product, creator, and marketplace workflows.
 
-![Background Remover demo](docs/assets/background-remover-demo.svg)
+![Background Remover demo](docs/assets/background-remover-demo.png)
 
-The demo graphic above uses a generated product illustration, not a private or personal source image.
+The demo above uses the repo-local generated product fixture from `test-fixtures/safe-product-mug.png`, not a private or personal source image.
 
 ## What it does
 
@@ -53,6 +53,7 @@ npm.cmd run lint
 npm.cmd run build
 npm.cmd run check
 npm.cmd run qa
+npm.cmd run capture:demo
 npm.cmd run clean:qa-artifacts
 ```
 
@@ -83,8 +84,8 @@ The command starts the local Vite app on `http://127.0.0.1:5175/` when one is no
 QA artifacts are written under `D:\open-source\background-remover\.tmp\qa-preview-export\`, including:
 
 - `preview-performance-result.png`
-- `download-marketplace-2000.png`
-- `background-remover-marketplace-2000.zip`
+- `safe-product-mug-marketplace-2000.png`
+- `background-remover-marketplace-2000-1-image.zip`
 
 Server logs for a QA-started dev server are written to:
 
@@ -94,13 +95,19 @@ Server logs for a QA-started dev server are written to:
 Supported overrides:
 
 - `BACKGROUND_REMOVER_QA_URL`: run against a different local app URL.
-- `BACKGROUND_REMOVER_TEST_IMAGE`: use a different local fixture image.
+- `BACKGROUND_REMOVER_TEST_IMAGE`: use a different local fixture image. By default QA uses `test-fixtures/safe-product-mug.png`.
 - `BROWSER_EXECUTABLE_PATH`: use a different Chromium-family browser executable. This path is only used to launch the browser; QA downloads and artifacts still stay under this repo on `D:`.
 
 Clean QA artifacts with:
 
 ```powershell
 npm.cmd run clean:qa-artifacts
+```
+
+Regenerate the README screenshot with:
+
+```powershell
+npm.cmd run capture:demo
 ```
 
 ## Project layout

@@ -4,6 +4,10 @@ All notable changes to this project will be documented here.
 
 ## Unreleased
 
+- Replace desktop-only QA fixture with a safe repo-local product PNG.
+- Replace illustrative README graphic with a real app screenshot capture.
+- Add a repeatable demo screenshot capture command.
+- Make the QA wrapper propagate browser-harness failures correctly.
 - Add a safe public demo graphic for the README.
 - Improve batch controls with pending, failed, and processed queue actions.
 - Rename ZIP exports to include preset and processed image count.
