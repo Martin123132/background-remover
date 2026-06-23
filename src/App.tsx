@@ -331,6 +331,9 @@ function App() {
 
   const retryFailedJobs = async () => {
     const queue = jobs.filter((job) => job.status === "error");
+    if (queue.length === 0) return;
+
+    setQueueFilter("error");
 
     for (const job of queue) {
       await processJob(job);
@@ -338,6 +341,11 @@ function App() {
   };
 
   const clearJobs = () => {
+    if (jobs.length === 0) return;
+    if (!window.confirm("Clear all items from the queue? This cannot be undone.")) {
+      return;
+    }
+
     jobs.forEach((job) => {
       revokeObjectUrlSoon(job.sourceUrl);
       revokeObjectUrlSoon(job.outputUrl);
@@ -386,8 +394,13 @@ function App() {
     }
   };
 
-  const removeJobs = (ids: string[]) => {
+  const removeJobs = (ids: string[], options?: { confirmMessage?: string }) => {
     if (ids.length === 0) return;
+
+    if (options?.confirmMessage && !window.confirm(options.confirmMessage)) {
+      return;
+    }
+
     const removals = new Set(ids);
 
     setJobs((current) => {
@@ -411,13 +424,30 @@ function App() {
   };
 
   const clearProcessedJobs = () => {
+    if (!window.confirm(`Clear all ${stats.done} processed items?`)) {
+      return;
+    }
+
     const ids = jobs.filter((job) => job.status === "done").map((job) => job.id);
     removeJobs(ids);
   };
 
   const clearFailedJobs = () => {
+    if (!window.confirm(`Clear all ${stats.error} failed items?`)) {
+      return;
+    }
+
     const ids = jobs.filter((job) => job.status === "error").map((job) => job.id);
     removeJobs(ids);
+  };
+
+  const removeJob = (id: string) => {
+    const job = jobs.find((item) => item.id === id);
+    if (!job) return;
+
+    removeJobs([id], {
+      confirmMessage: `Remove ${job.file.name} from queue?`,
+    });
   };
 
   return (
@@ -942,7 +972,7 @@ function App() {
                     <button
                       className="queue-action"
                       disabled={job.status === "processing"}
-                      onClick={() => removeJobs([job.id])}
+                      onClick={() => removeJob(job.id)}
                       title="Remove from queue"
                       type="button"
                     >
