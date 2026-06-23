@@ -219,7 +219,7 @@ async function main() {
     assert(identity.title === "Background Remover", `Unexpected title: ${identity.title}`);
     assert(identity.sceneCards === 5, `Unexpected scene count: ${identity.sceneCards}`);
     assert(identity.presetCards === 4, `Unexpected preset count: ${identity.presetCards}`);
-    assert(identity.queueTools >= 5, `Expected at least 5 queue tools, got ${identity.queueTools}`);
+    assert(identity.queueTools >= 7, `Expected at least 7 queue tools, got ${identity.queueTools}`);
     assert(identity.rangeFields === 3, `Unexpected range field count: ${identity.rangeFields}`);
     assert(identity.overlayText === 0, "Framework error overlay detected.");
     assert(
@@ -378,7 +378,61 @@ async function main() {
       `Log output names should match ZIP output names: ${loggedOutputNames.join(", ")}`
     );
 
+    assert(
+      (await page.locator('.export-history-action', { hasText: "Download manifest" }).count()) === 1,
+      "Expected exactly one visible per-run manifest download action."
+    );
+    const historyDownloadPath = path.join(downloadDir, expectedManifestFilename);
+    if (fs.existsSync(historyDownloadPath)) fs.rmSync(historyDownloadPath, { force: true });
+    const [historyManifestDownload] = await Promise.all([
+      page.waitForEvent("download", { timeout: 30000 }),
+      page.locator('.export-history-action', { hasText: "Download manifest" }).click(),
+    ]);
+    const manifestFile = historyManifestDownload.suggestedFilename();
+    assert(manifestFile === expectedManifestFilename, `Unexpected history manifest filename: ${manifestFile}`);
+    await historyManifestDownload.saveAs(historyDownloadPath);
+    const manifestFromHistory = fs.readFileSync(historyDownloadPath, "utf8");
+    const historyManifestLines = manifestFromHistory
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    assert(historyManifestLines[0]?.startsWith("run_id"), "History manifest should include a CSV header.");
+    for (const entry of expectedImageZipEntries) {
+      assert(
+        historyManifestLines.some((line) => line.includes(entry)),
+        `History manifest missing output file: ${entry}`
+      );
+    }
+
     await page.screenshot({ path: screenshotPath, fullPage: false });
+
+    const clearExportLogButton = page.locator('.queue-tools .queue-tool', { hasText: "Clear export log" });
+    assert(await clearExportLogButton.count() === 1, "Expected clear export log control.");
+    let dialogAccepted = false;
+    const onDialog = (dialog) => {
+      dialogAccepted = true;
+      void dialog.accept();
+    };
+    page.on("dialog", onDialog);
+    await clearExportLogButton.click();
+    try {
+      const clearedLog = await page.waitForFunction(() => {
+        const raw = window.localStorage.getItem("background-remover-export-log-v1");
+        return raw === "[]";
+      }, { timeout: 10000 });
+      assert(clearedLog !== null, "Export log should be empty after clear.");
+    } finally {
+      page.off("dialog", onDialog);
+    }
+    assert(dialogAccepted, "Expected clear export log confirmation dialog.");
+    assert(
+      (await page.locator(".export-history-empty").count()) === 1,
+      "Export history empty state should be visible after clear."
+    );
+    assert(
+      (await page.locator('.export-history-action', { hasText: "Download manifest" }).count()) === 0,
+      "Manifest action buttons should disappear after clearing export log."
+    );
 
     await page.locator('button', { hasText: "Reset preferences" }).click();
     await assertSelectedCardHasId(page, ".preset-card", `data-preset-id=${defaults.exportPresetId}`, 30000);

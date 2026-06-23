@@ -31,6 +31,8 @@ Checks performed:
 - Verifies ZIP contains both processed images with the same `2000x2000` dimensions.
 - Verifies a manifest CSV (`*-manifest.csv`) is included in the ZIP with per-item rows.
 - Verifies a persistent local export-log entry is written in `background-remover-export-log-v1`.
+- Verifies queue history exposes a per-run manifest download action and that downloading it yields matching entries.
+- Verifies queue history can be cleared from the new **Clear export log** control and removes the history UI.
 - Verifies reset-preference flow restores defaults and disables shadow controls on transparent scene.
 - Fails the run on console errors or failed network requests.
 

@@ -1619,7 +1619,7 @@ function App() {
                       </div>
                       <div className="export-history-meta">
                         <span>
-                          {preset} · {scene}
+                          {preset} - {scene}
                         </span>
                         <span className="export-history-file">{entry.zipFile}</span>
                       </div>
