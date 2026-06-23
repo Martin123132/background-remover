@@ -180,6 +180,12 @@ function clampNumber(value: unknown, min: number, max: number): number {
   return safe;
 }
 
+function truncateText(value: string | undefined, maxLength: number) {
+  if (!value) return "";
+  if (value.length <= maxLength) return value;
+  return `${value.slice(0, maxLength - 3)}...`;
+}
+
 function readPersistedSettings(): StoredUISettings {
   if (typeof window === "undefined") return {};
 
@@ -962,6 +968,15 @@ function App() {
                   <h2>{selectedJob.file.name}</h2>
                   <div className="toolbar-metrics">
                     <p>{formatBytes(selectedJob.file.size)}</p>
+                    {selectedJob.status !== "ready" ? (
+                      <p className="queue-item-status">
+                        {selectedJob.status === "done"
+                          ? `Done${selectedJob.qualityScore ? ` - Q${selectedJob.qualityScore}` : ""}`
+                          : selectedJob.status === "error"
+                            ? `Failed${selectedJob.error ? `: ${truncateText(selectedJob.error, 90)}` : ""}`
+                            : "Processing"}
+                      </p>
+                    ) : null}
                     {selectedJob.status === "done" && selectedJob.qualityScore ? (
                       <>
                         <QualityBadge score={selectedJob.qualityScore} />
@@ -1242,6 +1257,7 @@ function App() {
                         {formatBytes(job.file.size)}
                         {job.qualityScore ? ` - Q${job.qualityScore}` : ""}
                         {job.deviceUsed ? ` - ${job.deviceUsed.toUpperCase()}` : ""}
+                        {job.error ? ` - ${truncateText(job.error, 60)}` : ""}
                       </small>
                     </span>
                     <StatusIcon status={job.status} />
