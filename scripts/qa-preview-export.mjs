@@ -22,9 +22,16 @@ const inputImage =
   process.env.BACKGROUND_REMOVER_TEST_IMAGE ||
   path.join(projectRoot, "test-fixtures", "safe-product-mug.png");
 const inputBaseName = path.parse(inputImage).name;
+const inputExt = path.parse(inputImage).ext || ".png";
+const duplicateInputImage = path.join(artifactDir, `${inputBaseName}-2${inputExt}`);
+
+const qaInputImages = [inputImage, duplicateInputImage];
 const selectedPath = path.join(artifactDir, `${inputBaseName}-marketplace-2000.png`);
-const zipPath = path.join(artifactDir, "background-remover-marketplace-2000-1-image.zip");
-const expectedZipEntry = `${inputBaseName}-marketplace-2000.png`;
+const zipPath = path.join(
+  artifactDir,
+  `background-remover-marketplace-2000-${qaInputImages.length}-images.zip`
+);
+const expectedZipEntries = qaInputImages.map((fixturePath) => `${path.parse(fixturePath).name}-marketplace-2000.png`);
 const rawUrl = process.env.BACKGROUND_REMOVER_QA_URL || "http://127.0.0.1:5175/";
 const qaUrl = (() => {
   const parsed = new URL(rawUrl);
@@ -74,12 +81,69 @@ async function imageInfo(page, selector) {
   });
 }
 
+async function waitForProcessingState(page, timeoutMs = 30000) {
+  try {
+    await page.waitForFunction(
+      () => {
+        const banner = document.querySelector(".queue-processing-banner");
+        const status = document.querySelector(".queue-item-state");
+        return !!(
+          banner ||
+          (status && status.textContent && status.textContent.trim() === "Processing")
+        );
+      },
+      { timeout: timeoutMs }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function assertProcessingLocks(page, shouldBeLocked) {
+  const controls = [
+    [page.getByRole("button", { name: "Clear queue" }), "Clear queue"],
+    [page.getByRole("button", { name: "Remove backgrounds" }), "topbar Remove backgrounds"],
+    [page.locator('.action-row button', { hasText: "Retry failed" }), "topbar Retry failed"],
+    [page.locator('.action-row .secondary-button'), "topbar Export processed ZIP"],
+    [page.locator('.queue-tools .queue-tool', { hasText: "Process queue" }), "queue Process queue"],
+    [page.locator('.queue-tools .queue-tool', { hasText: "Retry failed" }), "queue Retry failed"],
+    [page.locator('.queue-tools .queue-tool', { hasText: "Export processed ZIP" }), "queue Export processed ZIP"],
+    [page.locator('.queue-tools .queue-tool', { hasText: "Clear processed" }), "queue Clear processed"],
+    [page.locator('.queue-tools .queue-tool', { hasText: "Clear failed" }), "queue Clear failed"],
+  ];
+
+  const queueBanner = page.locator(".queue-processing-banner").first();
+  assert(await queueBanner.isVisible(), `Expected queue processing banner during processing.`);
+
+  for (const [locator, name] of controls) {
+    const disabled = await locator.isDisabled();
+    assert(
+      disabled === shouldBeLocked,
+      `${name} should ${shouldBeLocked ? "" : "not "}be disabled while ${shouldBeLocked ? "processing" : "idle"}`
+    );
+  }
+
+  const perItemActionCount = await page.locator(".queue-action").count();
+  for (let index = 0; index < perItemActionCount; index += 1) {
+    const itemAction = page.locator(".queue-action").nth(index);
+    const disabled = await itemAction.isDisabled();
+    assert(
+      disabled === shouldBeLocked,
+      `Per-item queue action should ${shouldBeLocked ? "" : "not "}be disabled while ${shouldBeLocked ? "processing" : "idle"}`
+    );
+  }
+}
+
 async function main() {
   assert(projectRoot.startsWith("D:\\"), `Project root must be on D:. Current root: ${projectRoot}`);
   if (browserExecutablePath) {
     assert(fs.existsSync(browserExecutablePath), `Browser executable not found: ${browserExecutablePath}`);
   }
   assert(fs.existsSync(inputImage), `Missing test image: ${inputImage}`);
+  if (!fs.existsSync(duplicateInputImage)) {
+    fs.copyFileSync(inputImage, duplicateInputImage);
+  }
 
   const errors = [];
   const warnings = [];
@@ -148,8 +212,14 @@ async function main() {
     assert(defaults.sliders?.offset?.min === QA_SHADOW_SLIDERS.offset.min, "Missing shadow offset slider min.");
     assert(defaults.sliders?.offset?.max === QA_SHADOW_SLIDERS.offset.max, "Missing shadow offset slider max.");
 
-    await page.locator('input[type="file"]').setInputFiles(inputImage);
-    await page.getByRole("button", { name: "Remove backgrounds" }).click();
+    await page.locator('input[type="file"]').setInputFiles(qaInputImages);
+    const processButton = page.getByRole("button", { name: "Remove backgrounds" });
+    await processButton.click();
+    const processingStarted = await waitForProcessingState(page, 5000);
+    if (processingStarted) {
+      await assertProcessingLocks(page, true);
+    }
+
     await page.locator(".comparison-output").waitFor({ state: "visible", timeout: 180000 });
     await page.locator(".quality-badge").waitFor({
       state: "visible",
@@ -209,19 +279,29 @@ async function main() {
     ]);
     const zipSuggestedFilename = zipDownload.suggestedFilename();
     assert(
-      zipSuggestedFilename === "background-remover-marketplace-2000-1-image.zip",
+      zipSuggestedFilename === `background-remover-marketplace-2000-${qaInputImages.length}-images.zip`,
       `Unexpected ZIP filename: ${zipSuggestedFilename}`
     );
     await zipDownload.saveAs(zipPath);
     const zipBuffer = fs.readFileSync(zipPath);
     const zip = await JSZip.loadAsync(zipBuffer);
     const entries = Object.keys(zip.files).filter((name) => !zip.files[name].dir);
-    assert(entries.length === 1, `Unexpected ZIP entries: ${entries.join(", ")}`);
-    assert(entries[0] === expectedZipEntry, `Unexpected ZIP entry: ${entries[0]}`);
-    const zippedPng = await zip.files[entries[0]].async("nodebuffer");
-    const zippedDimensions = pngDimensions(zippedPng);
-    assert(zippedDimensions.width === 2000, `Zipped width ${zippedDimensions.width}`);
-    assert(zippedDimensions.height === 2000, `Zipped height ${zippedDimensions.height}`);
+    const sortedEntries = entries.sort();
+    const sortedExpectedZipEntries = expectedZipEntries.sort();
+    assert(sortedEntries.length === sortedExpectedZipEntries.length, `Unexpected ZIP entries: ${sortedEntries.join(", ")}`);
+    assert(
+      sortedEntries.every((entry, index) => entry === sortedExpectedZipEntries[index]),
+      `Unexpected ZIP entries: ${sortedEntries.join(", ")}`
+    );
+
+    const zippedDimensions = [];
+    for (const entry of sortedEntries) {
+      const zippedPng = await zip.files[entry].async("nodebuffer");
+      const dimensions = pngDimensions(zippedPng);
+      assert(dimensions.width === 2000, `Zipped width ${dimensions.width}`);
+      assert(dimensions.height === 2000, `Zipped height ${dimensions.height}`);
+      zippedDimensions.push(dimensions);
+    }
 
     await page.screenshot({ path: screenshotPath, fullPage: false });
 

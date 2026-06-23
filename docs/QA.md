@@ -19,13 +19,14 @@ This executes:
 Checks performed:
 
 - Verifies app identity and required UI controls exist.
-- Loads `test-fixtures/safe-product-mug.png` into the queue.
+- Loads `test-fixtures/safe-product-mug.png` into the queue (and a fixture duplicate) to exercise batch-processing locks.
 - Runs background removal.
 - Applies the marketplace preset + warm sweep scene + shadow controls.
 - Verifies live preview compositing remains capped at `900x900`.
 - Verifies selected export PNG is `2000x2000`.
-- Verifies ZIP export filename is `background-remover-marketplace-2000-1-image.zip`.
-- Verifies ZIP contains only the processed image with the same `2000x2000` dimensions.
+- Verifies batch-processing lock controls (topbar and queue tools) are disabled while processing.
+- Verifies ZIP export filename is `background-remover-marketplace-2000-2-images.zip`.
+- Verifies ZIP contains both processed images with the same `2000x2000` dimensions.
 - Verifies reset-preference flow restores defaults and disables shadow controls on transparent scene.
 - Fails the run on console errors or failed network requests.
 
@@ -33,7 +34,7 @@ Artifacts are written to:
 
 - `D:\open-source\background-remover\.tmp\qa-preview-export\preview-performance-result.png`
 - `D:\open-source\background-remover\.tmp\qa-preview-export\safe-product-mug-marketplace-2000.png`
-- `D:\open-source\background-remover\.tmp\qa-preview-export\background-remover-marketplace-2000-1-image.zip`
+- `D:\open-source\background-remover\.tmp\qa-preview-export\background-remover-marketplace-2000-2-images.zip`
 
 Server logs for QA-run launched dev servers are written to:
 

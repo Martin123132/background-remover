@@ -94,16 +94,17 @@ cd D:\open-source\background-remover
 npm.cmd run qa:preview-export
 ```
 
-The command starts the local Vite app on `http://127.0.0.1:5175/` when one is not already running, uploads the existing fixture image, applies the marketplace export preset with a product-photo background and shadow, then verifies two things:
+The command starts the local Vite app on `http://127.0.0.1:5175/` when one is not already running, uploads two fixture images, applies the marketplace export preset with a product-photo background and shadow, then verifies:
 
 - The live composed preview stays capped at `900x900` so slider changes do not repeatedly render full-size output.
-- The selected PNG export and ZIP export remain full preset quality at `2000x2000`.
+- The selected PNG export and ZIP exports remain full preset quality at `2000x2000`.
+- Queue controls are locked while batch processing is running.
 
 QA artifacts are written under `D:\open-source\background-remover\.tmp\qa-preview-export\`, including:
 
 - `preview-performance-result.png`
 - `safe-product-mug-marketplace-2000.png`
-- `background-remover-marketplace-2000-1-image.zip`
+- `background-remover-marketplace-2000-2-images.zip`
 
 Server logs for a QA-started dev server are written to:
 
