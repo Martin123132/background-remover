@@ -989,7 +989,7 @@ function App() {
                           ? `Done${selectedJob.qualityScore ? ` - Q${selectedJob.qualityScore}` : ""}`
                           : selectedJob.status === "error"
                             ? `Failed${selectedJob.error ? `: ${truncateText(selectedJob.error, 90)}` : ""}`
-                            : "Processing"}
+                          : "Processing"}
                       </p>
                     ) : null}
                     {selectedJob.status === "done" && selectedJob.qualityScore ? (
@@ -1002,6 +1002,12 @@ function App() {
                       </>
                     ) : null}
                   </div>
+                  {hasProcessingJobs ? (
+                    <div className="preview-processing-banner" role="status">
+                      <Loader2 className="spin" size={14} />
+                      Queue processing is running. Preview actions may be temporarily delayed.
+                    </div>
+                  ) : null}
                 </div>
                 <button
                   className="secondary-button"

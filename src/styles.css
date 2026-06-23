@@ -587,6 +587,21 @@ a {
   white-space: nowrap;
 }
 
+.preview-processing-banner {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #7f543f;
+  background: #fff0e4;
+  border: 1px solid #ffd3b0;
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
 .toolbar-metrics {
   display: flex;
   flex-wrap: wrap;
