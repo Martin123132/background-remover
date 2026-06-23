@@ -367,6 +367,8 @@ function App() {
     return `${visibleCount} ${filterLabelMap[queueFilter]} ${visibleCount === 1 ? "item" : "items"} shown`;
   }, [visibleCount, queueFilter]);
 
+  const hasProcessingJobs = stats.processing > 0;
+
   const resolveQueueFilter = (nextJobs: ImageJob[]): QueueFilter => {
     if (nextJobs.some((job) => job.status === "ready")) return "ready";
     if (nextJobs.some((job) => job.status === "error")) return "error";
@@ -1185,7 +1187,7 @@ function App() {
           <div className="queue-tools" aria-label="Batch queue controls">
             <button
               className="queue-tool"
-              disabled={stats.processable === 0 || stats.processing > 0}
+              disabled={stats.processable === 0 || hasProcessingJobs}
               onClick={processQueuedJobs}
               title="Process all ready and failed items"
               type="button"
@@ -1196,9 +1198,9 @@ function App() {
             </button>
             <button
               className="queue-tool"
-              disabled={stats.error === 0 || stats.processing > 0}
+              disabled={stats.error === 0 || hasProcessingJobs}
               onClick={retryFailedJobs}
-              title="Retry all failed items"
+              title={hasProcessingJobs ? "Finish current processing before retrying failed items." : "Retry all failed items"}
               type="button"
             >
               <AlertCircle size={15} />
@@ -1218,9 +1220,10 @@ function App() {
             </button>
             <button
               className="queue-tool"
-              disabled={stats.done === 0 || isZipping || isExportingSelected || stats.processing > 0}
+              disabled={stats.done === 0 || isZipping || isExportingSelected || hasProcessingJobs}
               onClick={clearProcessedJobs}
               type="button"
+              title={hasProcessingJobs ? "Finish current processing before clearing processed items." : "Clear processed items"}
             >
               <Check size={15} />
               Clear processed
@@ -1228,16 +1231,22 @@ function App() {
             </button>
             <button
               className="queue-tool"
-              disabled={stats.error === 0 || isZipping || isExportingSelected || stats.processing > 0}
+              disabled={stats.error === 0 || isZipping || isExportingSelected || hasProcessingJobs}
               onClick={clearFailedJobs}
               type="button"
-              title="Remove failed items from the queue"
+              title={hasProcessingJobs ? "Finish current processing before clearing failed items." : "Remove failed items from the queue"}
             >
               <X size={15} />
               Clear failed
               <span>{stats.error}</span>
             </button>
           </div>
+
+          {hasProcessingJobs ? (
+            <div className="queue-processing-banner" role="status">
+              Batch processing is running. Per-item actions are locked until completion.
+            </div>
+          ) : null}
 
           <div className="queue-list">
             {visibleJobs.length === 0 ? (
@@ -1269,9 +1278,15 @@ function App() {
                   <div className="queue-actions">
                     <button
                       className="queue-action"
-                      disabled={job.status === "processing"}
+                      disabled={job.status === "processing" || hasProcessingJobs}
                       onClick={() => processJob(job)}
-                      title={job.status === "error" ? "Retry image" : "Reprocess image"}
+                      title={
+                        hasProcessingJobs
+                          ? "Batch processing is running."
+                          : job.status === "error"
+                            ? "Retry image"
+                            : "Reprocess image"
+                      }
                       type="button"
                     >
                       {job.status === "processing" ? (
@@ -1282,9 +1297,9 @@ function App() {
                     </button>
                     <button
                       className="queue-action"
-                      disabled={job.status === "processing"}
+                      disabled={job.status === "processing" || hasProcessingJobs}
                       onClick={() => removeJob(job.id)}
-                      title="Remove from queue"
+                      title={hasProcessingJobs ? "Batch processing is running." : "Remove from queue"}
                       type="button"
                     >
                       <X size={17} />

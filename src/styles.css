@@ -973,6 +973,17 @@ a {
   margin-top: 14px;
 }
 
+.queue-processing-banner {
+  margin-top: 10px;
+  color: #7f543f;
+  background: #ffe8d8;
+  border: 1px solid #ffbe96;
+  border-radius: 7px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 750;
+}
+
 .queue-empty {
   padding: 18px;
   color: #756f68;
