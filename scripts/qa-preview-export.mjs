@@ -22,16 +22,30 @@ const inputImage =
   process.env.BACKGROUND_REMOVER_TEST_IMAGE ||
   path.join(projectRoot, "test-fixtures", "safe-product-mug.png");
 const inputBaseName = path.parse(inputImage).name;
-const inputExt = path.parse(inputImage).ext || ".png";
-const duplicateInputImage = path.join(artifactDir, `${inputBaseName}-2${inputExt}`);
-
-const qaInputImages = [inputImage, duplicateInputImage];
+const qaInputImages = [inputImage, inputImage];
 const selectedPath = path.join(artifactDir, `${inputBaseName}-marketplace-2000.png`);
 const zipPath = path.join(
   artifactDir,
   `background-remover-marketplace-2000-${qaInputImages.length}-images.zip`
 );
-const expectedZipEntries = qaInputImages.map((fixturePath) => `${path.parse(fixturePath).name}-marketplace-2000.png`);
+function uniquifyFilenames(names) {
+  const counts = new Map();
+  return names.map((name) => {
+    const count = counts.get(name) ?? 0;
+    counts.set(name, count + 1);
+    if (count === 0) return name;
+
+    const dotIndex = name.lastIndexOf(".");
+    const base = dotIndex > 0 ? name.slice(0, dotIndex) : name;
+    const ext = dotIndex > 0 ? name.slice(dotIndex) : "";
+
+    return `${base}-${count + 1}${ext}`;
+  });
+}
+
+const expectedZipEntries = uniquifyFilenames(
+  qaInputImages.map((fixturePath) => `${path.parse(fixturePath).name}-marketplace-2000.png`)
+);
 const rawUrl = process.env.BACKGROUND_REMOVER_QA_URL || "http://127.0.0.1:5175/";
 const qaUrl = (() => {
   const parsed = new URL(rawUrl);
@@ -158,9 +172,6 @@ async function main() {
     assert(fs.existsSync(browserExecutablePath), `Browser executable not found: ${browserExecutablePath}`);
   }
   assert(fs.existsSync(inputImage), `Missing test image: ${inputImage}`);
-  if (!fs.existsSync(duplicateInputImage)) {
-    fs.copyFileSync(inputImage, duplicateInputImage);
-  }
 
   const errors = [];
   const warnings = [];

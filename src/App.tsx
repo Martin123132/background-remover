@@ -44,6 +44,7 @@ import {
   downloadBlob,
   downloadZip,
   formatBytes,
+  uniquifyFilenames,
   outputFilename,
 } from "./lib/files";
 import {
@@ -613,14 +614,17 @@ function App() {
 
     setIsZipping(true);
     try {
+      const baseFilenames = doneJobs.map((job) => outputFilename(job.file.name, exportPreset.suffix));
+      const uniqueFilenames = uniquifyFilenames(baseFilenames);
+
       const files = await Promise.all(
-        doneJobs.map(async (job) => ({
+        doneJobs.map(async (job, index) => ({
           blob: await renderExportPreset(
             job.outputBlob as Blob,
             exportPreset,
             exportComposition
           ),
-          filename: outputFilename(job.file.name, exportPreset.suffix),
+          filename: uniqueFilenames[index],
         }))
       );
 

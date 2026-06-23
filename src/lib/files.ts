@@ -28,6 +28,26 @@ export function outputFilename(inputName: string, suffix = "cutout"): string {
   return `${base}-${suffix}.png`;
 }
 
+export function uniquifyFilenames(names: string[]): string[] {
+  const counts = new Map<string, number>();
+
+  return names.map((name) => {
+    const baseCount = counts.get(name) ?? 0;
+    counts.set(name, baseCount + 1);
+
+    if (baseCount === 0) {
+      return name;
+    }
+
+    const dotIndex = name.lastIndexOf(".");
+    const hasExt = dotIndex > 0;
+    const base = hasExt ? name.slice(0, dotIndex) : name;
+    const ext = hasExt ? name.slice(dotIndex) : "";
+
+    return `${base}-${baseCount + 1}${ext}`;
+  });
+}
+
 export function batchZipFilename(suffix: string, count: number): string {
   const countLabel = count === 1 ? "1-image" : `${count}-images`;
   return `background-remover-${suffix}-${countLabel}.zip`;

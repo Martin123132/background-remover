@@ -19,7 +19,9 @@ This executes:
 Checks performed:
 
 - Verifies app identity and required UI controls exist.
-- Loads `test-fixtures/safe-product-mug.png` into the queue (and a fixture duplicate) to exercise batch-processing locks.
+- Loads `test-fixtures/safe-product-mug.png` into the queue twice to exercise:
+  - batch-processing locks,
+  - duplicate-filename-safe ZIP export naming.
 - Runs background removal.
 - Applies the marketplace preset + warm sweep scene + shadow controls.
 - Verifies live preview compositing remains capped at `900x900`.

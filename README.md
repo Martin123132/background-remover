@@ -15,6 +15,7 @@ The demo above is a real processed output generated from the repo-local fixture 
 - Exports transparent PNGs with no watermark.
 - Adds product-photo backgrounds, marketplace export presets, shadows, and ZIP export.
 - Exports completed batch items separately from pending or failed queue items.
+- Handles duplicate source filenames during ZIP export by appending `-2`, `-3`, etc. to output names so entries remain unique.
 - Names ZIP exports with the selected preset and processed image count.
 - Remembers export, scene, and shadow preferences across browser reloads, with a top-right reset action.
 - Uses self-hosted model/WASM assets from `public/models/background-removal`.
