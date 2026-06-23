@@ -1079,6 +1079,35 @@ a {
   overflow-wrap: anywhere;
 }
 
+.export-history-actions {
+  margin-top: 6px;
+}
+
+.export-history-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  color: #184a5b;
+  background: transparent;
+  border: 0;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.export-history-action:hover {
+  color: #0f3340;
+  text-decoration: underline;
+}
+
+.export-history-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .queue-empty {
   padding: 18px;
   color: #756f68;

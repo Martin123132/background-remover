@@ -364,6 +364,46 @@ function buildExportLogCsv(log: ExportLogItem[]): string {
     .join("\n")}\n`;
 }
 
+function buildExportManifestCsvFromLog(entry: ExportLogItem): string {
+  const headers = [
+    "run_id",
+    "run_at_utc",
+    "zip_file",
+    "manifest_file",
+    "preset",
+    "scene",
+    "shadow",
+    "shadow_intensity",
+    "shadow_blur",
+    "shadow_offset",
+    "source_file",
+    "source_size_bytes",
+    "output_file",
+    "output_bytes",
+  ];
+
+  const rows = entry.items.map((item) => ({
+    run_id: entry.id,
+    run_at_utc: entry.runAt,
+    zip_file: entry.zipFile,
+    manifest_file: entry.manifestFile,
+    preset: entry.presetId,
+    scene: entry.sceneId,
+    shadow: entry.shadow,
+    shadow_intensity: entry.shadowIntensity,
+    shadow_blur: entry.shadowBlur,
+    shadow_offset: entry.shadowOffset,
+    source_file: item.sourceFile,
+    source_size_bytes: item.sourceSize,
+    output_file: item.outputFile,
+    output_bytes: 0,
+  }));
+
+  return `${headers.join(",")}\n${rows
+    .map((row) => headers.map((column) => csvValue((row as Record<string, ExportManifestCell>)[column] ?? "")).join(","))
+    .join("\n")}\n`;
+}
+
 function formatExportRunAt(rawRunAt: string): string {
   const date = new Date(rawRunAt);
   if (Number.isNaN(date.getTime())) {
@@ -878,6 +918,22 @@ function App() {
     const csv = buildExportLogCsv(exportLog);
     const filename = `background-remover-export-log-${new Date().toISOString().replace(/[:.]/g, "-")}.csv`;
     downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), filename);
+  };
+  
+  const clearExportLog = () => {
+    if (exportLog.length === 0) return;
+
+    if (!window.confirm(`Clear export history (${exportLog.length} run${exportLog.length === 1 ? "" : "s"})?`)) {
+      return;
+    }
+
+    setExportLog([]);
+    writeExportLogToStorage([]);
+  };
+
+  const downloadManifestForHistoryEntry = (entry: ExportLogItem) => {
+    const csv = buildExportManifestCsvFromLog(entry);
+    downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), entry.manifestFile);
   };
 
   const removeJobs = (ids: string[], options?: { confirmMessage?: string; keepFilter?: boolean }) => {
@@ -1509,6 +1565,17 @@ function App() {
             </button>
             <button
               className="queue-tool"
+              disabled={exportLog.length === 0 || isZipping || isExportingSelected || hasProcessingJobs}
+              onClick={clearExportLog}
+              title="Clear export history"
+              type="button"
+            >
+              <X size={15} />
+              Clear export log
+              <span>{exportLog.length}</span>
+            </button>
+            <button
+              className="queue-tool"
               disabled={stats.done === 0 || isZipping || isExportingSelected || hasProcessingJobs}
               onClick={clearProcessedJobs}
               type="button"
@@ -1557,6 +1624,17 @@ function App() {
                         <span className="export-history-file">{entry.zipFile}</span>
                       </div>
                       <div className="export-history-meta">manifest: {entry.manifestFile}</div>
+                      <div className="export-history-actions">
+                        <button
+                          className="export-history-action"
+                          onClick={() => downloadManifestForHistoryEntry(entry)}
+                          title="Download manifest CSV for this run"
+                          type="button"
+                        >
+                          <Download size={14} />
+                          Download manifest
+                        </button>
+                      </div>
                     </li>
                   );
                 })}

@@ -18,6 +18,7 @@ The demo above is a real processed output generated from the repo-local fixture 
 - Handles duplicate source filenames during ZIP export by appending `-2`, `-3`, etc. to output names so entries remain unique.
 - Names ZIP exports with the selected preset and processed image count.
 - Adds a lightweight, persistent export manifest log kept in browser storage and downloadable as CSV.
+- Supports quick per-run manifest downloads from the recent-export history panel.
 - Remembers export, scene, and shadow preferences across browser reloads, with a top-right reset action.
 - Uses self-hosted model/WASM assets from `public/models/background-removal`.
 
@@ -36,6 +37,7 @@ More on presets and composition scenes is in [Export presets and scenes](docs/EX
   - Failed
 - Export processed items only with **Export processed ZIP**.
 - Download a persisted batch export history CSV with **Export log**.
+- Clear export run history with **Clear export log**.
 - Clear completed/failed workflow noise with **Clear processed** and **Clear failed**.
 - Remove individual items from the queue with the per-item remove action.
 
