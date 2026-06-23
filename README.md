@@ -16,6 +16,7 @@ The demo above is a real processed output generated from the repo-local fixture 
 - Adds product-photo backgrounds, marketplace export presets, shadows, and ZIP export.
 - Exports completed batch items separately from pending or failed queue items.
 - Names ZIP exports with the selected preset and processed image count.
+- Remembers export, scene, and shadow preferences across browser reloads, with a top-right reset action.
 - Uses self-hosted model/WASM assets from `public/models/background-removal`.
 
 More on presets and composition scenes is in [Export presets and scenes](docs/EXPORT_PRESETS.md).

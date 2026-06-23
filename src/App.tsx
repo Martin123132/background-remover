@@ -88,6 +88,18 @@ const modeLabels: Record<RemovalMode, { label: string; detail: string }> = {
 const PREVIEW_MAX_DIMENSION = 900;
 const PREVIEW_RENDER_DEBOUNCE_MS = 180;
 const SETTINGS_STORAGE_KEY = "background-remover-ui-settings-v1";
+const DEFAULT_UI_SETTINGS: Required<StoredUISettings> = {
+  mode: "balanced",
+  executionDevice: "cpu",
+  background: "checker",
+  customBackground: "#f8fafc",
+  exportPresetId: "transparent",
+  exportSceneId: "transparent",
+  exportShadow: false,
+  shadowIntensity: 45,
+  shadowBlur: 28,
+  shadowOffset: 24,
+};
 
 type StoredUISettings = {
   mode?: RemovalMode;
@@ -194,31 +206,39 @@ function App() {
   const [jobs, setJobs] = useState<ImageJob[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [queueFilter, setQueueFilter] = useState<QueueFilter>("all");
-  const [mode, setMode] = useState<RemovalMode>(persistedSettings.mode ?? "balanced");
+  const [mode, setMode] = useState<RemovalMode>(persistedSettings.mode ?? DEFAULT_UI_SETTINGS.mode);
   const [executionDevice, setExecutionDevice] = useState<ExecutionDevice>(
-    persistedSettings.executionDevice ?? "cpu"
+    persistedSettings.executionDevice ?? DEFAULT_UI_SETTINGS.executionDevice
   );
   const [background, setBackground] = useState<PreviewBackground>(
-    persistedSettings.background ?? "checker"
+    persistedSettings.background ?? DEFAULT_UI_SETTINGS.background
   );
-  const [customBackground, setCustomBackground] = useState(persistedSettings.customBackground ?? "#f8fafc");
+  const [customBackground, setCustomBackground] = useState(
+    persistedSettings.customBackground ?? DEFAULT_UI_SETTINGS.customBackground
+  );
   const [comparePosition, setComparePosition] = useState(50);
   const [isZipping, setIsZipping] = useState(false);
   const [isExportingSelected, setIsExportingSelected] = useState(false);
   const [exportPresetId, setExportPresetId] = useState<ExportPresetId>(
-    persistedSettings.exportPresetId ?? "transparent"
+    persistedSettings.exportPresetId ?? DEFAULT_UI_SETTINGS.exportPresetId
   );
   const [exportSceneId, setExportSceneId] = useState<ExportSceneId>(
-    persistedSettings.exportSceneId ?? "transparent"
+    persistedSettings.exportSceneId ?? DEFAULT_UI_SETTINGS.exportSceneId
   );
   const [exportShadow, setExportShadow] = useState(
     persistedSettings.exportSceneId === "transparent"
       ? false
-      : persistedSettings.exportShadow ?? false
+      : persistedSettings.exportShadow ?? DEFAULT_UI_SETTINGS.exportShadow
   );
-  const [shadowIntensity, setShadowIntensity] = useState(persistedSettings.shadowIntensity ?? 45);
-  const [shadowBlur, setShadowBlur] = useState(persistedSettings.shadowBlur ?? 28);
-  const [shadowOffset, setShadowOffset] = useState(persistedSettings.shadowOffset ?? 24);
+  const [shadowIntensity, setShadowIntensity] = useState(
+    persistedSettings.shadowIntensity ?? DEFAULT_UI_SETTINGS.shadowIntensity
+  );
+  const [shadowBlur, setShadowBlur] = useState(
+    persistedSettings.shadowBlur ?? DEFAULT_UI_SETTINGS.shadowBlur
+  );
+  const [shadowOffset, setShadowOffset] = useState(
+    persistedSettings.shadowOffset ?? DEFAULT_UI_SETTINGS.shadowOffset
+  );
   const [composedPreviewUrl, setComposedPreviewUrl] = useState<string>();
   const [isComposingPreview, setIsComposingPreview] = useState(false);
   const jobsRef = useRef<ImageJob[]>([]);
@@ -595,6 +615,25 @@ function App() {
     });
   };
 
+  const resetPreferences = () => {
+    try {
+      window.localStorage.removeItem(SETTINGS_STORAGE_KEY);
+    } catch {
+      // Ignore storage failures so this still works in privacy modes.
+    }
+
+    setMode(DEFAULT_UI_SETTINGS.mode);
+    setExecutionDevice(DEFAULT_UI_SETTINGS.executionDevice);
+    setBackground(DEFAULT_UI_SETTINGS.background);
+    setCustomBackground(DEFAULT_UI_SETTINGS.customBackground);
+    setExportPresetId(DEFAULT_UI_SETTINGS.exportPresetId);
+    setExportSceneId(DEFAULT_UI_SETTINGS.exportSceneId);
+    setExportShadow(DEFAULT_UI_SETTINGS.exportShadow);
+    setShadowIntensity(DEFAULT_UI_SETTINGS.shadowIntensity);
+    setShadowBlur(DEFAULT_UI_SETTINGS.shadowBlur);
+    setShadowOffset(DEFAULT_UI_SETTINGS.shadowOffset);
+  };
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -611,6 +650,10 @@ function App() {
           <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noreferrer">
             AGPL license
           </a>
+          <button className="ghost-button" onClick={resetPreferences} type="button">
+            <RefreshCw size={17} />
+            Reset preferences
+          </button>
           <button className="ghost-button" onClick={clearJobs} disabled={jobs.length === 0}>
             <Trash2 size={17} />
             Clear
