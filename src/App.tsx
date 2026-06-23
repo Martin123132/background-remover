@@ -97,6 +97,7 @@ const SHADOW_BLUR_MIN = 6;
 const SHADOW_BLUR_MAX = 56;
 const SHADOW_OFFSET_MIN = -20;
 const SHADOW_OFFSET_MAX = 80;
+const QA_WINDOW_FLAG = "background-remover-qa";
 const DEFAULT_UI_SETTINGS: Required<StoredUISettings> = {
   mode: "balanced",
   executionDevice: "cpu",
@@ -218,6 +219,15 @@ function readPersistedSettings(): StoredUISettings {
 
 function publishUiDefaultsToWindow() {
   if (typeof window === "undefined") return;
+  const params = new URLSearchParams(window.location.search);
+  const isQaMode = import.meta.env.DEV || params.get(QA_WINDOW_FLAG) === "1";
+
+  if (!isQaMode) {
+    if (window.__BACKGROUND_REMOVER_UI_DEFAULTS) {
+      window.__BACKGROUND_REMOVER_UI_DEFAULTS = undefined;
+    }
+    return;
+  }
 
   window.__BACKGROUND_REMOVER_UI_DEFAULTS = {
     ...DEFAULT_UI_SETTINGS,

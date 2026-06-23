@@ -18,7 +18,12 @@ const inputBaseName = path.parse(inputImage).name;
 const selectedPath = path.join(artifactDir, `${inputBaseName}-marketplace-2000.png`);
 const zipPath = path.join(artifactDir, "background-remover-marketplace-2000-1-image.zip");
 const expectedZipEntry = `${inputBaseName}-marketplace-2000.png`;
-const url = process.env.BACKGROUND_REMOVER_QA_URL || "http://127.0.0.1:5175/";
+const rawUrl = process.env.BACKGROUND_REMOVER_QA_URL || "http://127.0.0.1:5175/";
+const qaUrl = (() => {
+  const parsed = new URL(rawUrl);
+  parsed.searchParams.set("background-remover-qa", "1");
+  return parsed.toString();
+})();
 
 for (const dir of [artifactDir, downloadDir]) fs.mkdirSync(dir, { recursive: true });
 for (const filePath of [screenshotPath, selectedPath, zipPath]) {
@@ -99,7 +104,7 @@ async function main() {
       });
     });
 
-    await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
+    await page.goto(qaUrl, { waitUntil: "networkidle", timeout: 30000 });
     const identity = {
       title: await page.title(),
       sceneCards: await page.locator(".scene-card").count(),
@@ -216,7 +221,7 @@ async function main() {
 
     console.log(JSON.stringify({
       ok: true,
-      url,
+      url: qaUrl,
       inputImage,
       identity,
       previewInfo,
