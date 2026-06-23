@@ -856,7 +856,7 @@ a {
 
 .queue-tools {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 8px;
   margin-top: 12px;
 }
@@ -909,7 +909,7 @@ a {
 
 .queue-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 34px;
+  grid-template-columns: minmax(0, 1fr) 76px;
   align-items: center;
   gap: 10px;
   width: 100%;
@@ -945,6 +945,12 @@ a {
   background: #e6f1ef;
   border-radius: 7px;
   cursor: pointer;
+}
+
+.queue-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 34px);
+  gap: 8px;
 }
 
 .queue-action:disabled {

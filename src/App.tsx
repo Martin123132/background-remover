@@ -11,12 +11,14 @@ import {
   Lock,
   Package,
   Palette,
+  Check,
   RefreshCw,
   RotateCcw,
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
   Trash2,
+  X,
   Zap,
 } from "lucide-react";
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
@@ -344,6 +346,40 @@ function App() {
     } finally {
       setIsZipping(false);
     }
+  };
+
+  const removeJobs = (ids: string[]) => {
+    if (ids.length === 0) return;
+    const removals = new Set(ids);
+
+    setJobs((current) => {
+      const nextJobs = current.filter((job) => {
+        if (!removals.has(job.id)) return true;
+
+        revokeObjectUrlSoon(job.sourceUrl);
+        revokeObjectUrlSoon(job.outputUrl);
+        return false;
+      });
+
+      setSelectedId((currentId) => {
+        if (!currentId || removals.has(currentId)) {
+          return nextJobs[0]?.id ?? null;
+        }
+        return currentId;
+      });
+
+      return nextJobs;
+    });
+  };
+
+  const clearProcessedJobs = () => {
+    const ids = jobs.filter((job) => job.status === "done").map((job) => job.id);
+    removeJobs(ids);
+  };
+
+  const clearFailedJobs = () => {
+    const ids = jobs.filter((job) => job.status === "error").map((job) => job.id);
+    removeJobs(ids);
   };
 
   return (
@@ -756,6 +792,27 @@ function App() {
               Processed
               <span>{stats.done}</span>
             </button>
+            <button
+              className="queue-tool"
+              disabled={stats.done === 0 || isZipping || isExportingSelected || stats.processing > 0}
+              onClick={clearProcessedJobs}
+              type="button"
+            >
+              <Check size={15} />
+              Clear processed
+              <span>{stats.done}</span>
+            </button>
+            <button
+              className="queue-tool"
+              disabled={stats.error === 0 || isZipping || isExportingSelected || stats.processing > 0}
+              onClick={clearFailedJobs}
+              type="button"
+              title="Remove failed items from the queue"
+            >
+              <X size={15} />
+              Clear failed
+              <span>{stats.error}</span>
+            </button>
           </div>
 
           <div className="queue-list">
@@ -783,19 +840,30 @@ function App() {
                     </span>
                     <StatusIcon status={job.status} />
                   </button>
-                  <button
-                    className="queue-action"
-                    disabled={job.status === "processing"}
-                    onClick={() => processJob(job)}
-                    title={job.status === "error" ? "Retry image" : "Reprocess image"}
-                    type="button"
-                  >
-                    {job.status === "processing" ? (
-                      <Loader2 className="spin" size={17} />
-                    ) : (
-                      <RefreshCw size={17} />
-                    )}
-                  </button>
+                  <div className="queue-actions">
+                    <button
+                      className="queue-action"
+                      disabled={job.status === "processing"}
+                      onClick={() => processJob(job)}
+                      title={job.status === "error" ? "Retry image" : "Reprocess image"}
+                      type="button"
+                    >
+                      {job.status === "processing" ? (
+                        <Loader2 className="spin" size={17} />
+                      ) : (
+                        <RefreshCw size={17} />
+                      )}
+                    </button>
+                    <button
+                      className="queue-action"
+                      disabled={job.status === "processing"}
+                      onClick={() => removeJobs([job.id])}
+                      title="Remove from queue"
+                      type="button"
+                    >
+                      <X size={17} />
+                    </button>
+                  </div>
                 </div>
               ))
             )}
