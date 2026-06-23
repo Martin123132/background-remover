@@ -1057,6 +1057,38 @@ a {
   font-size: 12px;
 }
 
+.queue-item-state {
+  display: inline-flex;
+  align-items: center;
+  margin: 3px 0 4px 0;
+  min-height: 18px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.queue-item-state.ready {
+  color: #574f47;
+  background: #f0ece4;
+}
+
+.queue-item-state.processing {
+  color: #a34e32;
+  background: #ffe8d4;
+}
+
+.queue-item-state.done {
+  color: #1a6e46;
+  background: #daf0e5;
+}
+
+.queue-item-state.error {
+  color: #8f3021;
+  background: #ffd9d2;
+}
+
 .status-icon {
   color: #79736c;
 }

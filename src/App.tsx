@@ -1256,6 +1256,7 @@ function App() {
                     <img src={job.sourceUrl} alt="" />
                     <span>
                       <strong>{job.file.name}</strong>
+                      <span className={`queue-item-state ${job.status}`}>{jobStatusLabel(job.status)}</span>
                       <small>
                         {formatBytes(job.file.size)}
                         {job.qualityScore ? ` - Q${job.qualityScore}` : ""}
@@ -1383,6 +1384,13 @@ function StatusIcon({ status }: { status: JobStatus }) {
   if (status === "done") return <Check className="status-icon done" size={18} />;
   if (status === "error") return <RotateCcw className="status-icon error" size={18} />;
   return <ImageIcon className="status-icon" size={18} />;
+}
+
+function jobStatusLabel(status: JobStatus) {
+  if (status === "processing") return "Processing";
+  if (status === "done") return "Done";
+  if (status === "error") return "Failed";
+  return "Ready";
 }
 
 function progressLabel(progress?: RemovalProgress): string {
