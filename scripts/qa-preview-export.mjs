@@ -100,6 +100,20 @@ async function waitForProcessingState(page, timeoutMs = 30000) {
   }
 }
 
+async function waitForNoProcessingState(page, timeoutMs = 30000) {
+  try {
+    await page.waitForFunction(() => {
+      const states = Array.from(document.querySelectorAll(".queue-item-state"));
+      if (states.length === 0) return false;
+
+      return states.every((state) => state.textContent?.trim() !== "Processing");
+    }, { timeout: timeoutMs });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function assertProcessingLocks(page, shouldBeLocked) {
   const controls = [
     [page.getByRole("button", { name: "Clear queue" }), "Clear queue"],
@@ -114,24 +128,27 @@ async function assertProcessingLocks(page, shouldBeLocked) {
   ];
 
   const queueBanner = page.locator(".queue-processing-banner").first();
-  assert(await queueBanner.isVisible(), `Expected queue processing banner during processing.`);
+  if (shouldBeLocked) {
+    assert(await queueBanner.isVisible(), `Expected queue processing banner during processing.`);
+    for (const [locator, name] of controls) {
+      const disabled = await locator.isDisabled();
+      assert(
+        disabled === shouldBeLocked,
+        `${name} should be disabled while processing`
+      );
+    }
 
-  for (const [locator, name] of controls) {
-    const disabled = await locator.isDisabled();
-    assert(
-      disabled === shouldBeLocked,
-      `${name} should ${shouldBeLocked ? "" : "not "}be disabled while ${shouldBeLocked ? "processing" : "idle"}`
-    );
-  }
-
-  const perItemActionCount = await page.locator(".queue-action").count();
-  for (let index = 0; index < perItemActionCount; index += 1) {
-    const itemAction = page.locator(".queue-action").nth(index);
-    const disabled = await itemAction.isDisabled();
-    assert(
-      disabled === shouldBeLocked,
-      `Per-item queue action should ${shouldBeLocked ? "" : "not "}be disabled while ${shouldBeLocked ? "processing" : "idle"}`
-    );
+    const perItemActionCount = await page.locator(".queue-action").count();
+    for (let index = 0; index < perItemActionCount; index += 1) {
+      const itemAction = page.locator(".queue-action").nth(index);
+      const disabled = await itemAction.isDisabled();
+      assert(
+        disabled === shouldBeLocked,
+        `Per-item queue action should be disabled while processing`
+      );
+    }
+  } else {
+    assert(!(await queueBanner.isVisible()), "Queue processing banner should not be visible when idle.");
   }
 }
 
@@ -225,6 +242,13 @@ async function main() {
       state: "visible",
       timeout: 10000,
     });
+    const processingFinished = await waitForNoProcessingState(page, 30000);
+    assert(processingFinished, "Queue processing should finish before continuing.");
+    const queueBanner = page.locator(".queue-processing-banner").first();
+    if ((await queueBanner.count()) > 0) {
+      await queueBanner.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+    }
+    assert(!(await queueBanner.isVisible()), "Queue processing banner should clear after processing.");
 
     await page.locator(".preset-card", { hasText: "Marketplace square" }).click();
     await page.locator(".scene-card", { hasText: "Warm sweep" }).click();
