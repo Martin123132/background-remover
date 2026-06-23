@@ -761,6 +761,34 @@ a {
   opacity: 0.45;
 }
 
+.comparison-quick-controls {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 8px;
+}
+
+.comparison-quick-button {
+  border: 1px solid rgba(38, 35, 31, 0.14);
+  border-radius: 6px;
+  padding: 0 10px;
+  min-height: 28px;
+  background: #fffaf3;
+  color: #3f3a35;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.comparison-quick-button.active {
+  border-color: #d85136;
+  color: #8b2111;
+  background: rgba(216, 81, 54, 0.16);
+}
+
+.comparison-quick-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
 .progress-panel {
   display: grid;
   gap: 10px;

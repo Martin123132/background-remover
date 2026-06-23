@@ -1062,6 +1062,35 @@ function App() {
                       onChange={(event) => setComparePosition(Number(event.target.value))}
                       aria-label="Before and after comparison split"
                     />
+                    <span className="comparison-quick-controls" role="group" aria-label="Comparison presets">
+                      <button
+                        className={`comparison-quick-button ${comparePosition === 0 ? "active" : ""}`}
+                        type="button"
+                        title="Show source only"
+                        disabled={selectedJob.status !== "done"}
+                        onClick={() => setComparePosition(0)}
+                      >
+                        Source
+                      </button>
+                      <button
+                        className={`comparison-quick-button ${comparePosition === 50 ? "active" : ""}`}
+                        type="button"
+                        title="Show split preview"
+                        disabled={selectedJob.status !== "done"}
+                        onClick={() => setComparePosition(50)}
+                      >
+                        Split
+                      </button>
+                      <button
+                        className={`comparison-quick-button ${comparePosition === 100 ? "active" : ""}`}
+                        type="button"
+                        title="Show cutout only"
+                        disabled={selectedJob.status !== "done"}
+                        onClick={() => setComparePosition(100)}
+                      >
+                        Cutout
+                      </button>
+                    </span>
                   </div>
 
                   <ProgressTimeline job={selectedJob} />
