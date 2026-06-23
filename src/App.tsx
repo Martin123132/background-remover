@@ -1,17 +1,17 @@
 import {
   AlertCircle,
-  Check,
   Cpu,
+  Check,
   Download,
   Eraser,
   FileImage,
   Gauge,
+  ListFilter,
   ImageIcon,
   Loader2,
   Lock,
   Package,
   Palette,
-  Check,
   RefreshCw,
   RotateCcw,
   ShieldCheck,
@@ -49,6 +49,7 @@ import {
 
 type JobStatus = "ready" | "processing" | "done" | "error";
 type PreviewBackground = "checker" | "white" | "black" | "brand" | "custom";
+type QueueFilter = "all" | JobStatus;
 
 type ImageJob = {
   id: string;
@@ -104,6 +105,7 @@ function revokeObjectUrlSoon(url?: string) {
 function App() {
   const [jobs, setJobs] = useState<ImageJob[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [queueFilter, setQueueFilter] = useState<QueueFilter>("all");
   const [mode, setMode] = useState<RemovalMode>("balanced");
   const [executionDevice, setExecutionDevice] = useState<ExecutionDevice>("cpu");
   const [background, setBackground] = useState<PreviewBackground>("checker");
@@ -135,6 +137,14 @@ function App() {
     const processable = ready + error;
     return { done, error, processing, processable, ready, total: jobs.length };
   }, [jobs]);
+
+  const visibleJobs = useMemo(() => {
+    if (queueFilter === "all") {
+      return jobs;
+    }
+
+    return jobs.filter((job) => job.status === queueFilter);
+  }, [jobs, queueFilter]);
 
   const exportPreset = getExportPreset(exportPresetId);
   const exportComposition = useMemo<ExportComposition>(
@@ -760,6 +770,54 @@ function App() {
               {stats.error > 0 ? ` - ${stats.error} failed` : ""}
             </span>
           </div>
+          <div className="queue-filters" aria-label="Queue status filter">
+            <button
+              className={`queue-filter ${queueFilter === "all" ? "selected" : ""}`}
+              disabled={stats.total === 0}
+              onClick={() => setQueueFilter("all")}
+              type="button"
+            >
+              <ListFilter size={13} />
+              All
+              <span>{stats.total}</span>
+            </button>
+            <button
+              className={`queue-filter ${queueFilter === "ready" ? "selected" : ""}`}
+              disabled={stats.ready === 0}
+              onClick={() => setQueueFilter("ready")}
+              type="button"
+            >
+              Ready
+              <span>{stats.ready}</span>
+            </button>
+            <button
+              className={`queue-filter ${queueFilter === "processing" ? "selected" : ""}`}
+              disabled={stats.processing === 0}
+              onClick={() => setQueueFilter("processing")}
+              type="button"
+            >
+              Working
+              <span>{stats.processing}</span>
+            </button>
+            <button
+              className={`queue-filter ${queueFilter === "done" ? "selected" : ""}`}
+              disabled={stats.done === 0}
+              onClick={() => setQueueFilter("done")}
+              type="button"
+            >
+              Done
+              <span>{stats.done}</span>
+            </button>
+            <button
+              className={`queue-filter ${queueFilter === "error" ? "selected" : ""}`}
+              disabled={stats.error === 0}
+              onClick={() => setQueueFilter("error")}
+              type="button"
+            >
+              Failed
+              <span>{stats.error}</span>
+            </button>
+          </div>
 
           <div className="queue-tools" aria-label="Batch queue controls">
             <button
@@ -816,10 +874,10 @@ function App() {
           </div>
 
           <div className="queue-list">
-            {jobs.length === 0 ? (
-              <div className="queue-empty">Batch results will appear here.</div>
+            {visibleJobs.length === 0 ? (
+              <div className="queue-empty">No items match this view.</div>
             ) : (
-              jobs.map((job) => (
+              visibleJobs.map((job) => (
                 <div
                   className={job.id === selectedJob?.id ? "queue-item selected" : "queue-item"}
                   key={job.id}
