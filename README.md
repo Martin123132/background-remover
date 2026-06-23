@@ -20,6 +20,21 @@ The demo above is a real processed output generated from the repo-local fixture 
 
 More on presets and composition scenes is in [Export presets and scenes](docs/EXPORT_PRESETS.md).
 
+## Queue workflow
+
+- Add multiple files to the queue at once with the dropzone.
+- Use **To process** to remove backgrounds from ready and failed jobs.
+- Use **Retry failed** when failures remain after a batch run.
+- Filter queue items by status with the filter controls:
+  - All
+  - Ready
+  - Working
+  - Done
+  - Failed
+- Export processed items with **Export processed ZIP**.
+- Clear completed/failed workflow noise with **Clear processed** and **Clear failed**.
+- Remove individual items from the queue with the per-item remove action.
+
 ## Requirements
 
 - Windows PowerShell
