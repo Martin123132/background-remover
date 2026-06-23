@@ -35,6 +35,7 @@ import {
   exportPresets,
   exportScenes,
   getExportPreset,
+  getExportScene,
   renderExportPreset,
   type ExportComposition,
   type ExportPresetId,
@@ -363,6 +364,18 @@ function buildExportLogCsv(log: ExportLogItem[]): string {
     .join("\n")}\n`;
 }
 
+function formatExportRunAt(rawRunAt: string): string {
+  const date = new Date(rawRunAt);
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown time";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
+}
+
 function readPersistedSettings(): StoredUISettings {
   if (typeof window === "undefined") return {};
 
@@ -513,6 +526,7 @@ function App() {
   }, [jobs, queueFilter]);
 
   const visibleCount = visibleJobs.length;
+  const recentExportLog = useMemo(() => exportLog.slice(0, 5), [exportLog]);
   const selectedJob = useMemo(() => {
     const currentSelection = jobs.find((job) => job.id === selectedId);
     if (currentSelection) {
@@ -1515,6 +1529,39 @@ function App() {
               Clear failed
               <span>{stats.error}</span>
             </button>
+          </div>
+
+          <div className="export-history" aria-label="Recent export history">
+            <div className="export-history-head">
+              <h3>Recent exports</h3>
+              <span>{recentExportLog.length ? `${recentExportLog.length} shown` : "No entries"}</span>
+            </div>
+            {recentExportLog.length === 0 ? (
+              <div className="export-history-empty">Export runs appear here after ZIP export.</div>
+            ) : (
+              <ul className="export-history-list">
+                {recentExportLog.map((entry) => {
+                  const preset = getExportPreset(entry.presetId).label;
+                  const scene = getExportScene(entry.sceneId).label;
+
+                  return (
+                    <li className="export-history-item" key={entry.id}>
+                      <div className="export-history-top">
+                        <strong>{formatExportRunAt(entry.runAt)}</strong>
+                        <span>{entry.items.length} item{entry.items.length === 1 ? "" : "s"}</span>
+                      </div>
+                      <div className="export-history-meta">
+                        <span>
+                          {preset} · {scene}
+                        </span>
+                        <span className="export-history-file">{entry.zipFile}</span>
+                      </div>
+                      <div className="export-history-meta">manifest: {entry.manifestFile}</div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
 
           {hasProcessingJobs ? (
