@@ -6,7 +6,7 @@ An AGPL local-first background remover aimed at replacing credit-based backgroun
 
 ![Background Remover demo](docs/assets/background-remover-demo.png)
 
-The demo above uses the repo-local generated product fixture from `test-fixtures/safe-product-mug.png`, not a private or personal source image.
+The demo above is a real processed output generated from the repo-local fixture at `test-fixtures/safe-product-mug.png`, with marketplace composition and product shadow enabled. No private images are used.
 
 ## What it does
 
@@ -17,6 +17,8 @@ The demo above uses the repo-local generated product fixture from `test-fixtures
 - Exports completed batch items separately from pending or failed queue items.
 - Names ZIP exports with the selected preset and processed image count.
 - Uses self-hosted model/WASM assets from `public/models/background-removal`.
+
+More on presets and composition scenes is in [Export presets and scenes](docs/EXPORT_PRESETS.md).
 
 ## Requirements
 
@@ -108,6 +110,17 @@ Regenerate the README screenshot with:
 
 ```powershell
 npm.cmd run capture:demo
+```
+
+You can use these optional environment overrides to capture a different demo state:
+
+```powershell
+$env:BACKGROUND_REMOVER_DEMO_PRESET="Social avatar"
+$env:BACKGROUND_REMOVER_DEMO_SCENE="Cool grey"
+$env:BACKGROUND_REMOVER_DEMO_SHADOW="true"
+$env:BACKGROUND_REMOVER_DEMO_SHADOW_STRENGTH="60"
+$env:BACKGROUND_REMOVER_DEMO_SHADOW_BLUR="34"
+$env:BACKGROUND_REMOVER_DEMO_SHADOW_OFFSET="24"
 ```
 
 ## Project layout
