@@ -4,6 +4,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
 import { chromium } from "playwright-core";
+import {
+  QA_PREVIEW_MAX_DIMENSION,
+  QA_QUERY_PARAM_KEY,
+  QA_QUERY_PARAM_VALUE,
+  QA_SHADOW_SLIDERS,
+  QA_UI_DEFAULTS,
+} from "./qa-contract.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
@@ -21,7 +28,7 @@ const expectedZipEntry = `${inputBaseName}-marketplace-2000.png`;
 const rawUrl = process.env.BACKGROUND_REMOVER_QA_URL || "http://127.0.0.1:5175/";
 const qaUrl = (() => {
   const parsed = new URL(rawUrl);
-  parsed.searchParams.set("background-remover-qa", "1");
+  parsed.searchParams.set(QA_QUERY_PARAM_KEY, QA_QUERY_PARAM_VALUE);
   return parsed.toString();
 })();
 
@@ -124,11 +131,22 @@ async function main() {
       "Reset preferences control missing."
     );
 
-    const defaults = await page.evaluate(() => window.__BACKGROUND_REMOVER_UI_DEFAULTS);
+    const defaults = await page.evaluate(() => {
+      const namespaced = window.__BACKGROUND_REMOVER_QA__?.uiDefaults;
+      return namespaced ?? window.__BACKGROUND_REMOVER_UI_DEFAULTS;
+    });
     assert(defaults, "Missing UI defaults export from app.");
     assert(defaults.exportPresetId, "Missing default export preset id.");
     assert(defaults.exportSceneId, "Missing default export scene id.");
-    assert(defaults.sliders?.intensity?.min !== undefined, "Missing shadow intensity slider limits.");
+    assert(defaults.shadowIntensity === QA_UI_DEFAULTS.shadowIntensity, "Default shadow intensity mismatch.");
+    assert(defaults.shadowBlur === QA_UI_DEFAULTS.shadowBlur, "Default shadow blur mismatch.");
+    assert(defaults.shadowOffset === QA_UI_DEFAULTS.shadowOffset, "Default shadow offset mismatch.");
+    assert(defaults.sliders?.intensity?.min === QA_SHADOW_SLIDERS.intensity.min, "Missing shadow intensity slider min.");
+    assert(defaults.sliders?.intensity?.max === QA_SHADOW_SLIDERS.intensity.max, "Missing shadow intensity slider max.");
+    assert(defaults.sliders?.blur?.min === QA_SHADOW_SLIDERS.blur.min, "Missing shadow blur slider min.");
+    assert(defaults.sliders?.blur?.max === QA_SHADOW_SLIDERS.blur.max, "Missing shadow blur slider max.");
+    assert(defaults.sliders?.offset?.min === QA_SHADOW_SLIDERS.offset.min, "Missing shadow offset slider min.");
+    assert(defaults.sliders?.offset?.max === QA_SHADOW_SLIDERS.offset.max, "Missing shadow offset slider max.");
 
     await page.locator('input[type="file"]').setInputFiles(inputImage);
     await page.getByRole("button", { name: "Remove backgrounds" }).click();
@@ -142,13 +160,23 @@ async function main() {
     await page.locator(".scene-card", { hasText: "Warm sweep" }).click();
     await page.locator(".toggle-row input").check();
     const sliders = page.locator(".range-field input");
-    await sliders.nth(0).fill("72");
-    await sliders.nth(1).fill("42");
-    await sliders.nth(2).fill("36");
+    const shadowValues = [
+      Math.floor((QA_SHADOW_SLIDERS.intensity.min + QA_SHADOW_SLIDERS.intensity.max) * 0.72),
+      Math.floor((QA_SHADOW_SLIDERS.blur.min + QA_SHADOW_SLIDERS.blur.max) * 0.72),
+      Math.floor((QA_SHADOW_SLIDERS.offset.min + QA_SHADOW_SLIDERS.offset.max) * 0.72),
+    ];
 
-    await page.waitForFunction(() => {
+    await sliders.nth(0).fill(String(shadowValues[0]));
+    await sliders.nth(1).fill(String(shadowValues[1]));
+    await sliders.nth(2).fill(String(shadowValues[2]));
+
+    await page.waitForFunction((maxDimension) => {
       const image = document.querySelector(".comparison-output");
-      if (!(image instanceof HTMLImageElement) || image.naturalWidth !== 900 || image.naturalHeight !== 900) {
+      if (
+        !(image instanceof HTMLImageElement) ||
+        image.naturalWidth !== maxDimension ||
+        image.naturalHeight !== maxDimension
+      ) {
         return false;
       }
       const canvas = document.createElement("canvas");
@@ -158,11 +186,11 @@ async function main() {
       if (!context) return false;
       context.drawImage(image, 0, 0);
       return context.getImageData(12, 12, 1, 1).data[3] === 255;
-    }, null, { timeout: 30000 });
+    }, QA_PREVIEW_MAX_DIMENSION, { timeout: 30000 });
 
     const previewInfo = await imageInfo(page, ".comparison-output");
-    assert(previewInfo.width === 900, `Preview width ${previewInfo.width}`);
-    assert(previewInfo.height === 900, `Preview height ${previewInfo.height}`);
+    assert(previewInfo.width === QA_PREVIEW_MAX_DIMENSION, `Preview width ${previewInfo.width}`);
+    assert(previewInfo.height === QA_PREVIEW_MAX_DIMENSION, `Preview height ${previewInfo.height}`);
     assert(previewInfo.corner[3] === 255, "Preview scene corner should be opaque.");
 
     const [selectedDownload] = await Promise.all([

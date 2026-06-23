@@ -1,0 +1,42 @@
+{
+  "qa": {
+    "queryParamKey": "background-remover-qa",
+    "queryParamValue": "1"
+  },
+  "ui": {
+    "settingsStorageKey": "background-remover-ui-settings-v1",
+    "defaults": {
+      "mode": "balanced",
+      "executionDevice": "cpu",
+      "background": "checker",
+      "customBackground": "#f8fafc",
+      "exportPresetId": "transparent",
+      "exportSceneId": "transparent",
+      "exportShadow": false,
+      "shadowIntensity": 45,
+      "shadowBlur": 28,
+      "shadowOffset": 24
+    },
+    "sliders": {
+      "intensity": {
+        "default": 45,
+        "min": 10,
+        "max": 100
+      },
+      "blur": {
+        "default": 28,
+        "min": 6,
+        "max": 56
+      },
+      "offset": {
+        "default": 24,
+        "min": -20,
+        "max": 80
+      }
+    }
+  },
+  "preview": {
+    "maxDimension": 900,
+    "renderDebounceMs": 180
+  }
+}

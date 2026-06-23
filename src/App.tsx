@@ -46,6 +46,15 @@ import {
   formatBytes,
   outputFilename,
 } from "./lib/files";
+import {
+  QA_PREVIEW_MAX_DIMENSION,
+  QA_PREVIEW_RENDER_DEBOUNCE_MS,
+  QA_QUERY_PARAM_KEY,
+  QA_QUERY_PARAM_VALUE,
+  QA_SETTINGS_STORAGE_KEY,
+  QA_SHADOW_SLIDERS,
+  QA_UI_DEFAULTS,
+} from "./lib/qaContract";
 
 type JobStatus = "ready" | "processing" | "done" | "error";
 type PreviewBackground = "checker" | "white" | "black" | "brand" | "custom";
@@ -85,50 +94,39 @@ const modeLabels: Record<RemovalMode, { label: string; detail: string }> = {
   },
 };
 
-const PREVIEW_MAX_DIMENSION = 900;
-const PREVIEW_RENDER_DEBOUNCE_MS = 180;
-const SETTINGS_STORAGE_KEY = "background-remover-ui-settings-v1";
-const SHADOW_INTENSITY_DEFAULT = 45;
-const SHADOW_BLUR_DEFAULT = 28;
-const SHADOW_OFFSET_DEFAULT = 24;
-const SHADOW_INTENSITY_MIN = 10;
-const SHADOW_INTENSITY_MAX = 100;
-const SHADOW_BLUR_MIN = 6;
-const SHADOW_BLUR_MAX = 56;
-const SHADOW_OFFSET_MIN = -20;
-const SHADOW_OFFSET_MAX = 80;
-const QA_WINDOW_FLAG = "background-remover-qa";
 const DEFAULT_UI_SETTINGS: Required<StoredUISettings> = {
-  mode: "balanced",
-  executionDevice: "cpu",
-  background: "checker",
-  customBackground: "#f8fafc",
-  exportPresetId: "transparent",
-  exportSceneId: "transparent",
-  exportShadow: false,
-  shadowIntensity: SHADOW_INTENSITY_DEFAULT,
-  shadowBlur: SHADOW_BLUR_DEFAULT,
-  shadowOffset: SHADOW_OFFSET_DEFAULT,
+  ...QA_UI_DEFAULTS,
 };
+type QAUiDefaultsContract = {
+  mode: RemovalMode;
+  executionDevice: ExecutionDevice;
+  background: PreviewBackground;
+  customBackground: string;
+  exportPresetId: ExportPresetId;
+  exportSceneId: ExportSceneId;
+  exportShadow: boolean;
+  shadowIntensity: number;
+  shadowBlur: number;
+  shadowOffset: number;
+  sliders: {
+    intensity: { min: number; max: number };
+    blur: { min: number; max: number };
+    offset: { min: number; max: number };
+  };
+};
+
+type QAWindowGlobals = {
+  query: {
+    key: string;
+    value: string;
+  };
+  uiDefaults: QAUiDefaultsContract;
+};
+
 declare global {
   interface Window {
-    __BACKGROUND_REMOVER_UI_DEFAULTS?: {
-      mode: RemovalMode;
-      executionDevice: ExecutionDevice;
-      background: PreviewBackground;
-      customBackground: string;
-      exportPresetId: ExportPresetId;
-      exportSceneId: ExportSceneId;
-      exportShadow: boolean;
-      shadowIntensity: number;
-      shadowBlur: number;
-      shadowOffset: number;
-      sliders: {
-        intensity: { min: number; max: number };
-        blur: { min: number; max: number };
-        offset: { min: number; max: number };
-      };
-    };
+    __BACKGROUND_REMOVER_UI_DEFAULTS?: QAUiDefaultsContract;
+    __BACKGROUND_REMOVER_QA__?: QAWindowGlobals;
   }
 }
 
@@ -186,7 +184,7 @@ function readPersistedSettings(): StoredUISettings {
   if (typeof window === "undefined") return {};
 
   try {
-    const raw = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
+    const raw = window.localStorage.getItem(QA_SETTINGS_STORAGE_KEY);
     if (!raw) return {};
 
     const parsed = JSON.parse(raw);
@@ -202,13 +200,13 @@ function readPersistedSettings(): StoredUISettings {
     if (isExportSceneId(parsed.exportSceneId)) next.exportSceneId = parsed.exportSceneId;
     if (typeof parsed.exportShadow === "boolean") next.exportShadow = parsed.exportShadow;
     if (typeof parsed.shadowIntensity === "number") {
-      next.shadowIntensity = clampNumber(parsed.shadowIntensity, SHADOW_INTENSITY_MIN, SHADOW_INTENSITY_MAX);
+      next.shadowIntensity = clampNumber(parsed.shadowIntensity, QA_SHADOW_SLIDERS.intensity.min, QA_SHADOW_SLIDERS.intensity.max);
     }
     if (typeof parsed.shadowBlur === "number") {
-      next.shadowBlur = clampNumber(parsed.shadowBlur, SHADOW_BLUR_MIN, SHADOW_BLUR_MAX);
+      next.shadowBlur = clampNumber(parsed.shadowBlur, QA_SHADOW_SLIDERS.blur.min, QA_SHADOW_SLIDERS.blur.max);
     }
     if (typeof parsed.shadowOffset === "number") {
-      next.shadowOffset = clampNumber(parsed.shadowOffset, SHADOW_OFFSET_MIN, SHADOW_OFFSET_MAX);
+      next.shadowOffset = clampNumber(parsed.shadowOffset, QA_SHADOW_SLIDERS.offset.min, QA_SHADOW_SLIDERS.offset.max);
     }
 
     return next;
@@ -220,23 +218,35 @@ function readPersistedSettings(): StoredUISettings {
 function publishUiDefaultsToWindow() {
   if (typeof window === "undefined") return;
   const params = new URLSearchParams(window.location.search);
-  const isQaMode = import.meta.env.DEV || params.get(QA_WINDOW_FLAG) === "1";
+  const isQaMode = import.meta.env.DEV || params.get(QA_QUERY_PARAM_KEY) === QA_QUERY_PARAM_VALUE;
 
   if (!isQaMode) {
+    if (window.__BACKGROUND_REMOVER_QA__) {
+      window.__BACKGROUND_REMOVER_QA__ = undefined;
+    }
     if (window.__BACKGROUND_REMOVER_UI_DEFAULTS) {
       window.__BACKGROUND_REMOVER_UI_DEFAULTS = undefined;
     }
     return;
   }
 
-  window.__BACKGROUND_REMOVER_UI_DEFAULTS = {
+  const payload: QAUiDefaultsContract = {
     ...DEFAULT_UI_SETTINGS,
     sliders: {
-      intensity: { min: SHADOW_INTENSITY_MIN, max: SHADOW_INTENSITY_MAX },
-      blur: { min: SHADOW_BLUR_MIN, max: SHADOW_BLUR_MAX },
-      offset: { min: SHADOW_OFFSET_MIN, max: SHADOW_OFFSET_MAX },
+      intensity: { min: QA_SHADOW_SLIDERS.intensity.min, max: QA_SHADOW_SLIDERS.intensity.max },
+      blur: { min: QA_SHADOW_SLIDERS.blur.min, max: QA_SHADOW_SLIDERS.blur.max },
+      offset: { min: QA_SHADOW_SLIDERS.offset.min, max: QA_SHADOW_SLIDERS.offset.max },
     },
   };
+
+  window.__BACKGROUND_REMOVER_QA__ = {
+    query: {
+      key: QA_QUERY_PARAM_KEY,
+      value: QA_QUERY_PARAM_VALUE,
+    },
+    uiDefaults: payload,
+  };
+  window.__BACKGROUND_REMOVER_UI_DEFAULTS = payload;
 }
 
 function createJob(file: File): ImageJob {
@@ -388,7 +398,7 @@ function App() {
     };
 
     try {
-      window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(next));
+      window.localStorage.setItem(QA_SETTINGS_STORAGE_KEY, JSON.stringify(next));
     } catch {
       // Ignore storage failures (private mode, quota, etc).
     }
@@ -416,7 +426,7 @@ function App() {
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       setDebouncedExportComposition(exportComposition);
-    }, PREVIEW_RENDER_DEBOUNCE_MS);
+    }, QA_PREVIEW_RENDER_DEBOUNCE_MS);
 
     return () => window.clearTimeout(timeout);
   }, [exportComposition]);
@@ -446,7 +456,7 @@ function App() {
     setIsComposingPreview(true);
 
     renderExportPreset(selectedJob.outputBlob, exportPreset, debouncedExportComposition, {
-      maxDimension: PREVIEW_MAX_DIMENSION,
+      maxDimension: QA_PREVIEW_MAX_DIMENSION,
     })
       .then((blob) => {
         if (cancelled) return;
@@ -674,7 +684,7 @@ function App() {
 
   const resetPreferences = () => {
     try {
-      window.localStorage.removeItem(SETTINGS_STORAGE_KEY);
+      window.localStorage.removeItem(QA_SETTINGS_STORAGE_KEY);
     } catch {
       // Ignore storage failures so this still works in privacy modes.
     }
@@ -865,8 +875,8 @@ function App() {
               <strong>{shadowIntensity}%</strong>
                 <input
                   type="range"
-                  min={SHADOW_INTENSITY_MIN}
-                  max={SHADOW_INTENSITY_MAX}
+                  min={QA_SHADOW_SLIDERS.intensity.min}
+                  max={QA_SHADOW_SLIDERS.intensity.max}
                   value={shadowIntensity}
                   disabled={!exportShadow || exportSceneId === "transparent"}
                   onChange={(event) => setShadowIntensity(Number(event.target.value))}
@@ -879,8 +889,8 @@ function App() {
                 <strong>{shadowBlur}px</strong>
                 <input
                   type="range"
-                  min={SHADOW_BLUR_MIN}
-                  max={SHADOW_BLUR_MAX}
+                  min={QA_SHADOW_SLIDERS.blur.min}
+                  max={QA_SHADOW_SLIDERS.blur.max}
                   value={shadowBlur}
                   disabled={!exportShadow || exportSceneId === "transparent"}
                   onChange={(event) => setShadowBlur(Number(event.target.value))}
@@ -891,8 +901,8 @@ function App() {
                 <strong>{shadowOffset}px</strong>
                 <input
                   type="range"
-                  min={SHADOW_OFFSET_MIN}
-                  max={SHADOW_OFFSET_MAX}
+                  min={QA_SHADOW_SLIDERS.offset.min}
+                  max={QA_SHADOW_SLIDERS.offset.max}
                   value={shadowOffset}
                   disabled={!exportShadow || exportSceneId === "transparent"}
                   onChange={(event) => setShadowOffset(Number(event.target.value))}
