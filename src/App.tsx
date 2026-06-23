@@ -729,9 +729,15 @@ function App() {
             <RefreshCw size={17} />
             Reset preferences
           </button>
-          <button className="ghost-button" onClick={clearJobs} disabled={jobs.length === 0}>
+          <button
+            className="ghost-button"
+            onClick={clearJobs}
+            disabled={jobs.length === 0 || hasProcessingJobs}
+            title={hasProcessingJobs ? "Finish current processing before clearing the queue." : "Clear all queued items"}
+            type="button"
+          >
             <Trash2 size={17} />
-            Clear
+            Clear queue
           </button>
         </nav>
       </header>
