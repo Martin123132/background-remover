@@ -174,6 +174,14 @@ function App() {
     return `${visibleCount} ${filterLabelMap[queueFilter]} ${visibleCount === 1 ? "item" : "items"} shown`;
   }, [visibleCount, queueFilter]);
 
+  const resolveQueueFilter = (nextJobs: ImageJob[]): QueueFilter => {
+    if (nextJobs.some((job) => job.status === "ready")) return "ready";
+    if (nextJobs.some((job) => job.status === "error")) return "error";
+    if (nextJobs.some((job) => job.status === "processing")) return "processing";
+    if (nextJobs.some((job) => job.status === "done")) return "done";
+    return "all";
+  };
+
   const exportPreset = getExportPreset(exportPresetId);
   const exportComposition = useMemo<ExportComposition>(
     () => ({
@@ -352,6 +360,7 @@ function App() {
     });
     setJobs([]);
     setSelectedId(null);
+    setQueueFilter("all");
   };
 
   const downloadSelected = async () => {
@@ -394,7 +403,7 @@ function App() {
     }
   };
 
-  const removeJobs = (ids: string[], options?: { confirmMessage?: string }) => {
+  const removeJobs = (ids: string[], options?: { confirmMessage?: string; keepFilter?: boolean }) => {
     if (ids.length === 0) return;
 
     if (options?.confirmMessage && !window.confirm(options.confirmMessage)) {
@@ -411,6 +420,10 @@ function App() {
         revokeObjectUrlSoon(job.outputUrl);
         return false;
       });
+
+      if (!options?.keepFilter) {
+        setQueueFilter(resolveQueueFilter(nextJobs));
+      }
 
       setSelectedId((currentId) => {
         if (!currentId || removals.has(currentId)) {
@@ -832,6 +845,7 @@ function App() {
               className={`queue-filter ${queueFilter === "all" ? "selected" : ""}`}
               disabled={stats.total === 0}
               onClick={() => setQueueFilter("all")}
+              aria-current={queueFilter === "all" ? "page" : undefined}
               type="button"
             >
               <ListFilter size={13} />
@@ -842,6 +856,7 @@ function App() {
               className={`queue-filter ${queueFilter === "ready" ? "selected" : ""}`}
               disabled={stats.ready === 0}
               onClick={() => setQueueFilter("ready")}
+              aria-current={queueFilter === "ready" ? "page" : undefined}
               type="button"
             >
               Ready
@@ -851,6 +866,7 @@ function App() {
               className={`queue-filter ${queueFilter === "processing" ? "selected" : ""}`}
               disabled={stats.processing === 0}
               onClick={() => setQueueFilter("processing")}
+              aria-current={queueFilter === "processing" ? "page" : undefined}
               type="button"
             >
               Working
@@ -860,6 +876,7 @@ function App() {
               className={`queue-filter ${queueFilter === "done" ? "selected" : ""}`}
               disabled={stats.done === 0}
               onClick={() => setQueueFilter("done")}
+              aria-current={queueFilter === "done" ? "page" : undefined}
               type="button"
             >
               Done
@@ -869,6 +886,7 @@ function App() {
               className={`queue-filter ${queueFilter === "error" ? "selected" : ""}`}
               disabled={stats.error === 0}
               onClick={() => setQueueFilter("error")}
+              aria-current={queueFilter === "error" ? "page" : undefined}
               type="button"
             >
               Failed
