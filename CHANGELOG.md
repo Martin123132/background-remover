@@ -11,6 +11,8 @@ All notable changes to this project will be documented here.
 - Add a safe public demo graphic for the README.
 - Improve batch controls with pending, failed, and processed queue actions.
 - Prevent processed-zip filename collisions when duplicate source filenames are in the queue.
+- Add per-batch export manifest file in ZIP exports.
+- Persist batch export log in local storage and add CSV download.
 - Rename ZIP exports to include preset and processed image count.
 - Extend browser QA to cover queue controls and processed ZIP naming.
 - Add issue and pull request templates.

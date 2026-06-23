@@ -29,6 +29,8 @@ Checks performed:
 - Verifies batch-processing lock controls (topbar and queue tools) are disabled while processing.
 - Verifies ZIP export filename is `background-remover-marketplace-2000-2-images.zip`.
 - Verifies ZIP contains both processed images with the same `2000x2000` dimensions.
+- Verifies a manifest CSV (`*-manifest.csv`) is included in the ZIP with per-item rows.
+- Verifies a persistent local export-log entry is written in `background-remover-export-log-v1`.
 - Verifies reset-preference flow restores defaults and disables shadow controls on transparent scene.
 - Fails the run on console errors or failed network requests.
 
@@ -37,6 +39,10 @@ Artifacts are written to:
 - `D:\open-source\background-remover\.tmp\qa-preview-export\preview-performance-result.png`
 - `D:\open-source\background-remover\.tmp\qa-preview-export\safe-product-mug-marketplace-2000.png`
 - `D:\open-source\background-remover\.tmp\qa-preview-export\background-remover-marketplace-2000-2-images.zip`
+
+The ZIP export now also includes:
+
+- `background-remover-marketplace-2000-2-images-manifest.csv`
 
 Server logs for QA-run launched dev servers are written to:
 

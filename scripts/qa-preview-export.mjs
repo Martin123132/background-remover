@@ -24,10 +24,12 @@ const inputImage =
 const inputBaseName = path.parse(inputImage).name;
 const qaInputImages = [inputImage, inputImage];
 const selectedPath = path.join(artifactDir, `${inputBaseName}-marketplace-2000.png`);
+const zipFilename = `background-remover-marketplace-2000-${qaInputImages.length}-images.zip`;
 const zipPath = path.join(
   artifactDir,
-  `background-remover-marketplace-2000-${qaInputImages.length}-images.zip`
+  zipFilename
 );
+const expectedManifestFilename = `${zipFilename.replace(/\.zip$/, "")}-manifest.csv`;
 function uniquifyFilenames(names) {
   const counts = new Map();
   return names.map((name) => {
@@ -46,6 +48,8 @@ function uniquifyFilenames(names) {
 const expectedZipEntries = uniquifyFilenames(
   qaInputImages.map((fixturePath) => `${path.parse(fixturePath).name}-marketplace-2000.png`)
 );
+const expectedImageZipEntries = [...expectedZipEntries].sort();
+const expectedZipEntriesWithManifest = [...expectedImageZipEntries, expectedManifestFilename].sort();
 const rawUrl = process.env.BACKGROUND_REMOVER_QA_URL || "http://127.0.0.1:5175/";
 const qaUrl = (() => {
   const parsed = new URL(rawUrl);
@@ -322,7 +326,7 @@ async function main() {
     const zip = await JSZip.loadAsync(zipBuffer);
     const entries = Object.keys(zip.files).filter((name) => !zip.files[name].dir);
     const sortedEntries = entries.sort();
-    const sortedExpectedZipEntries = expectedZipEntries.sort();
+    const sortedExpectedZipEntries = expectedZipEntriesWithManifest;
     assert(sortedEntries.length === sortedExpectedZipEntries.length, `Unexpected ZIP entries: ${sortedEntries.join(", ")}`);
     assert(
       sortedEntries.every((entry, index) => entry === sortedExpectedZipEntries[index]),
@@ -330,13 +334,49 @@ async function main() {
     );
 
     const zippedDimensions = [];
-    for (const entry of sortedEntries) {
+    const imageEntries = sortedEntries.filter((entry) => entry.toLowerCase().endsWith(".png"));
+    assert(imageEntries.length === expectedImageZipEntries.length, `Unexpected image count in ZIP: ${sortedEntries.join(", ")}`);
+    assert(
+      imageEntries.every((entry, index) => entry === expectedImageZipEntries[index]),
+      `Unexpected image entries in ZIP: ${imageEntries.join(", ")}`
+    );
+    for (const entry of imageEntries) {
       const zippedPng = await zip.files[entry].async("nodebuffer");
       const dimensions = pngDimensions(zippedPng);
       assert(dimensions.width === 2000, `Zipped width ${dimensions.width}`);
       assert(dimensions.height === 2000, `Zipped height ${dimensions.height}`);
       zippedDimensions.push(dimensions);
     }
+
+    const manifestText = await zip.files[expectedManifestFilename].async("string");
+    const manifestLines = manifestText
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    assert(manifestLines[0]?.startsWith("run_id"), "Manifest should include a CSV header.");
+    const manifestLineSet = new Set(manifestLines.slice(1));
+    assert(manifestLineSet.size === expectedImageZipEntries.length, "Manifest should include one row per image.");
+    for (const entry of expectedImageZipEntries) {
+      assert(
+        manifestLines.some((line) => line.includes(entry)),
+        `Manifest missing output file: ${entry}`
+      );
+    }
+
+    const exportLog = await page.evaluate(() => {
+      const raw = window.localStorage.getItem("background-remover-export-log-v1");
+      return raw ? JSON.parse(raw) : null;
+    });
+    assert(Array.isArray(exportLog), "Export log should be present in local storage.");
+    assert(exportLog.length > 0, "Expected at least one export log entry.");
+    const latestLog = exportLog[0];
+    assert(latestLog.zipFile === zipSuggestedFilename, "Latest log entry should match downloaded ZIP filename.");
+    assert(Array.isArray(latestLog.items), "Log entry should include exported items.");
+    const loggedOutputNames = latestLog.items.map((item) => item.outputFile).sort();
+    assert(
+      expectedImageZipEntries.every((name) => loggedOutputNames.includes(name)),
+      `Log output names should match ZIP output names: ${loggedOutputNames.join(", ")}`
+    );
 
     await page.screenshot({ path: screenshotPath, fullPage: false });
 
@@ -370,6 +410,7 @@ async function main() {
       previewInfo,
       selectedDimensions,
       selectedSize: selectedBuffer.length,
+      manifestFilename: expectedManifestFilename,
       zipSuggestedFilename,
       zipEntries: entries,
       zippedDimensions,

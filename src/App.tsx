@@ -8,6 +8,7 @@ import {
   Gauge,
   ListFilter,
   ImageIcon,
+  FileText,
   Loader2,
   Lock,
   Package,
@@ -98,6 +99,32 @@ const modeLabels: Record<RemovalMode, { label: string; detail: string }> = {
 const DEFAULT_UI_SETTINGS: Required<StoredUISettings> = {
   ...QA_UI_DEFAULTS,
 };
+const EXPORT_LOG_STORAGE_KEY = "background-remover-export-log-v1";
+const EXPORT_LOG_LIMIT = 25;
+
+type ExportLogItem = {
+  id: string;
+  runAt: string;
+  zipFile: string;
+  manifestFile: string;
+  presetId: ExportPresetId;
+  sceneId: ExportSceneId;
+  shadow: boolean;
+  shadowIntensity: number;
+  shadowBlur: number;
+  shadowOffset: number;
+  items: Array<{
+    sourceFile: string;
+    sourceSize: number;
+    outputFile: string;
+  }>;
+};
+
+type BatchManifestInputItem = {
+  job: ImageJob;
+  outputFile: string;
+};
+
 type QAUiDefaultsContract = {
   mode: RemovalMode;
   executionDevice: ExecutionDevice;
@@ -185,6 +212,155 @@ function truncateText(value: string | undefined, maxLength: number) {
   if (!value) return "";
   if (value.length <= maxLength) return value;
   return `${value.slice(0, maxLength - 3)}...`;
+}
+
+function csvValue(value: string | number | boolean) {
+  const escaped = String(value).replace(/"/g, '""');
+  return /[",\r\n]/.test(escaped) ? `"${escaped}"` : escaped;
+}
+
+type ExportManifestCell = string | number | boolean;
+type ExportManifestRow = Record<string, ExportManifestCell>;
+
+function readExportLogFromStorage(): ExportLogItem[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const raw = window.localStorage.getItem(EXPORT_LOG_STORAGE_KEY);
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .filter((entry): entry is ExportLogItem => {
+        return (
+          typeof entry?.id === "string" &&
+          typeof entry?.runAt === "string" &&
+          typeof entry?.zipFile === "string" &&
+          typeof entry?.manifestFile === "string" &&
+          typeof entry?.presetId === "string" &&
+          typeof entry?.sceneId === "string" &&
+          typeof entry?.shadow === "boolean" &&
+          typeof entry?.shadowIntensity === "number" &&
+          typeof entry?.shadowBlur === "number" &&
+          typeof entry?.shadowOffset === "number" &&
+          Array.isArray(entry?.items)
+        );
+      })
+      .slice(-EXPORT_LOG_LIMIT);
+  } catch {
+    return [];
+  }
+}
+
+function writeExportLogToStorage(log: ExportLogItem[]) {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.localStorage.setItem(EXPORT_LOG_STORAGE_KEY, JSON.stringify(log.slice(0, EXPORT_LOG_LIMIT)));
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
+function buildExportManifestCsv(input: {
+  runId: string;
+  runAt: string;
+  preset: ExportPresetId;
+  scene: ExportSceneId;
+  shadow: boolean;
+  shadowIntensity: number;
+  shadowBlur: number;
+  shadowOffset: number;
+  items: BatchManifestInputItem[];
+  zipFile: string;
+  manifestFile: string;
+}): string {
+  const headers = [
+    "run_id",
+    "run_at_utc",
+    "zip_file",
+    "manifest_file",
+    "preset",
+    "scene",
+    "shadow",
+    "shadow_intensity",
+    "shadow_blur",
+    "shadow_offset",
+    "source_file",
+    "source_size_bytes",
+    "output_file",
+    "output_bytes",
+  ];
+  const lines = [headers.join(",")];
+  const row = input.items.map<ExportManifestRow>((item) => ({
+    run_id: input.runId,
+    run_at_utc: input.runAt,
+    zip_file: input.zipFile,
+    manifest_file: input.manifestFile,
+    preset: input.preset,
+    scene: input.scene,
+    shadow: input.shadow,
+    shadow_intensity: input.shadowIntensity,
+    shadow_blur: input.shadowBlur,
+    shadow_offset: input.shadowOffset,
+    source_file: item.job.file.name,
+    source_size_bytes: item.job.file.size,
+    output_file: item.outputFile,
+    output_bytes: item.job.outputBlob?.size ?? 0,
+  }));
+
+  for (const item of row) {
+    lines.push(
+      headers.map((column) => csvValue((item as Record<string, ExportManifestCell>)[column] ?? "")).join(",")
+    );
+  }
+
+  return `${lines.join("\n")}\n`;
+}
+
+function buildExportLogCsv(log: ExportLogItem[]): string {
+  if (log.length === 0) {
+    return "run_id,run_at_utc,zip_file,manifest_file,preset,scene,source_file,source_size_bytes,output_file\n";
+  }
+
+  const rows = log.flatMap((entry) =>
+    entry.items.map((item) => ({
+      run_id: entry.id,
+      run_at_utc: entry.runAt,
+      zip_file: entry.zipFile,
+      manifest_file: entry.manifestFile,
+      preset: entry.presetId,
+      scene: entry.sceneId,
+      shadow: entry.shadow,
+      shadow_intensity: entry.shadowIntensity,
+      shadow_blur: entry.shadowBlur,
+      shadow_offset: entry.shadowOffset,
+      source_file: item.sourceFile,
+      source_size_bytes: item.sourceSize,
+      output_file: item.outputFile,
+    }))
+  );
+
+  const headers = [
+    "run_id",
+    "run_at_utc",
+    "zip_file",
+    "manifest_file",
+    "preset",
+    "scene",
+    "shadow",
+    "shadow_intensity",
+    "shadow_blur",
+    "shadow_offset",
+    "source_file",
+    "source_size_bytes",
+    "output_file",
+  ];
+  return `${headers.join(",")}\n${rows
+    .map((row) => headers.map((column) => csvValue((row as Record<string, ExportManifestCell>)[column] ?? "")).join(","))
+    .join("\n")}\n`;
 }
 
 function readPersistedSettings(): StoredUISettings {
@@ -293,6 +469,7 @@ function App() {
   const [comparePosition, setComparePosition] = useState(50);
   const [isZipping, setIsZipping] = useState(false);
   const [isExportingSelected, setIsExportingSelected] = useState(false);
+  const [exportLog, setExportLog] = useState<ExportLogItem[]>(() => readExportLogFromStorage());
   const [exportPresetId, setExportPresetId] = useState<ExportPresetId>(
     persistedSettings.exportPresetId ?? DEFAULT_UI_SETTINGS.exportPresetId
   );
@@ -614,8 +791,46 @@ function App() {
 
     setIsZipping(true);
     try {
+      const runId = crypto.randomUUID();
+      const runAt = new Date().toISOString();
       const baseFilenames = doneJobs.map((job) => outputFilename(job.file.name, exportPreset.suffix));
       const uniqueFilenames = uniquifyFilenames(baseFilenames);
+      const zipFilename = batchZipFilename(exportPreset.suffix, doneJobs.length);
+      const manifestFilename = `${zipFilename.replace(/\.zip$/, "")}-manifest.csv`;
+      const manifestItems = doneJobs.map((job, index) => ({
+        job,
+        outputFile: uniqueFilenames[index],
+      }));
+      const manifestText = buildExportManifestCsv({
+        runId,
+        runAt,
+        preset: exportPresetId,
+        scene: exportSceneId,
+        shadow: exportShadow,
+        shadowIntensity,
+        shadowBlur,
+        shadowOffset,
+        items: manifestItems,
+        zipFile: zipFilename,
+        manifestFile: manifestFilename,
+      });
+      const logEntry: ExportLogItem = {
+        id: runId,
+        runAt,
+        zipFile: zipFilename,
+        manifestFile: manifestFilename,
+        presetId: exportPresetId,
+        sceneId: exportSceneId,
+        shadow: exportShadow,
+        shadowIntensity,
+        shadowBlur,
+        shadowOffset,
+        items: manifestItems.map((entry) => ({
+          sourceFile: entry.job.file.name,
+          sourceSize: entry.job.file.size,
+          outputFile: entry.outputFile,
+        })),
+      };
 
       const files = await Promise.all(
         doneJobs.map(async (job, index) => ({
@@ -627,11 +842,28 @@ function App() {
           filename: uniqueFilenames[index],
         }))
       );
+      files.push({
+        blob: new Blob([manifestText], { type: "text/csv;charset=utf-8" }),
+        filename: manifestFilename,
+      });
 
-      await downloadZip(files, batchZipFilename(exportPreset.suffix, files.length));
+      await downloadZip(files, zipFilename);
+      setExportLog((previous) => {
+        const next = [logEntry, ...previous].slice(0, EXPORT_LOG_LIMIT);
+        writeExportLogToStorage(next);
+        return next;
+      });
     } finally {
       setIsZipping(false);
     }
+  };
+
+  const downloadExportLog = () => {
+    if (exportLog.length === 0) return;
+
+    const csv = buildExportLogCsv(exportLog);
+    const filename = `background-remover-export-log-${new Date().toISOString().replace(/[:.]/g, "-")}.csv`;
+    downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), filename);
   };
 
   const removeJobs = (ids: string[], options?: { confirmMessage?: string; keepFilter?: boolean }) => {
@@ -1250,6 +1482,16 @@ function App() {
               <Package size={15} />
               Export processed ZIP
               <span>{stats.done}</span>
+            </button>
+            <button
+              className="queue-tool"
+              disabled={exportLog.length === 0}
+              onClick={downloadExportLog}
+              title="Download export log CSV"
+              type="button"
+            >
+              <FileText size={15} />
+              Export log
             </button>
             <button
               className="queue-tool"
