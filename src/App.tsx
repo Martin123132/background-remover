@@ -943,7 +943,11 @@ function App() {
             <button
               className="secondary-button"
               disabled={stats.done === 0 || isZipping || isExportingSelected || hasProcessingJobs}
-              title={hasProcessingJobs ? "Batch processing is running." : "Export all processed items in ZIP"}
+              title={
+                hasProcessingJobs
+                  ? "Batch processing is running. Export ZIP after processing completes."
+                  : "Export all processed items in ZIP"
+              }
               onClick={downloadProcessedZip}
               type="button"
             >
@@ -1234,7 +1238,7 @@ function App() {
             </button>
             <button
               className="queue-tool"
-              disabled={stats.done === 0 || isZipping || isExportingSelected}
+              disabled={stats.done === 0 || isZipping || isExportingSelected || hasProcessingJobs}
               onClick={downloadProcessedZip}
               title="Export processed items to ZIP"
               type="button"
