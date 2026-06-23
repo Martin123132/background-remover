@@ -75,7 +75,7 @@ npm.cmd run capture:demo
 npm.cmd run clean:qa-artifacts
 ```
 
-`npm.cmd run check` runs lint followed by the production build. There is no separate unit-test suite yet; the browser regression check below is the current end-to-end QA path.
+`npm.cmd run check` runs lint followed by the production build. There is no separate unit-test suite yet; the browser regression check below is the current end-to-end QA path documented in [QA.md](docs/QA.md).
 
 ## Storage rule
 
