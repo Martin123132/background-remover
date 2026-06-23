@@ -87,6 +87,92 @@ const modeLabels: Record<RemovalMode, { label: string; detail: string }> = {
 
 const PREVIEW_MAX_DIMENSION = 900;
 const PREVIEW_RENDER_DEBOUNCE_MS = 180;
+const SETTINGS_STORAGE_KEY = "background-remover-ui-settings-v1";
+
+type StoredUISettings = {
+  mode?: RemovalMode;
+  executionDevice?: ExecutionDevice;
+  background?: PreviewBackground;
+  customBackground?: string;
+  exportPresetId?: ExportPresetId;
+  exportSceneId?: ExportSceneId;
+  exportShadow?: boolean;
+  shadowIntensity?: number;
+  shadowBlur?: number;
+  shadowOffset?: number;
+};
+
+function isRemovalMode(value: unknown): value is RemovalMode {
+  return value === "balanced" || value === "fast" || value === "quality" || value === "mask";
+}
+
+function isExecutionDevice(value: unknown): value is ExecutionDevice {
+  return value === "cpu" || value === "gpu";
+}
+
+function isPreviewBackground(value: unknown): value is PreviewBackground {
+  return (
+    value === "checker" ||
+    value === "white" ||
+    value === "black" ||
+    value === "brand" ||
+    value === "custom"
+  );
+}
+
+function isExportPresetId(value: unknown): value is ExportPresetId {
+  return value === "transparent" || value === "marketplace" || value === "avatar" || value === "thumbnail";
+}
+
+function isExportSceneId(value: unknown): value is ExportSceneId {
+  return value === "transparent" || value === "white" || value === "warm" || value === "cool" || value === "graphite";
+}
+
+function isHexColor(value: unknown): value is string {
+  return typeof value === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value);
+}
+
+function clampNumber(value: unknown, min: number, max: number): number {
+  if (typeof value !== "number" || Number.isNaN(value)) return min;
+  const safe = Math.round(value);
+  if (safe < min || safe > max) return min;
+  return safe;
+}
+
+function readPersistedSettings(): StoredUISettings {
+  if (typeof window === "undefined") return {};
+
+  try {
+    const raw = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (!raw) return {};
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return {};
+
+    const next: StoredUISettings = {};
+
+    if (isRemovalMode(parsed.mode)) next.mode = parsed.mode;
+    if (isExecutionDevice(parsed.executionDevice)) next.executionDevice = parsed.executionDevice;
+    if (isPreviewBackground(parsed.background)) next.background = parsed.background;
+    if (isHexColor(parsed.customBackground)) next.customBackground = parsed.customBackground;
+    if (isExportPresetId(parsed.exportPresetId)) next.exportPresetId = parsed.exportPresetId;
+    if (isExportSceneId(parsed.exportSceneId)) next.exportSceneId = parsed.exportSceneId;
+    if (typeof parsed.exportShadow === "boolean") next.exportShadow = parsed.exportShadow;
+    if (typeof parsed.shadowIntensity === "number") {
+      next.shadowIntensity = clampNumber(parsed.shadowIntensity, 10, 100);
+    }
+    if (typeof parsed.shadowBlur === "number") {
+      next.shadowBlur = clampNumber(parsed.shadowBlur, 6, 56);
+    }
+    if (typeof parsed.shadowOffset === "number") {
+      next.shadowOffset = clampNumber(parsed.shadowOffset, -20, 80);
+    }
+
+    return next;
+  } catch {
+    return {};
+  }
+}
 
 function createJob(file: File): ImageJob {
   return {
@@ -103,22 +189,36 @@ function revokeObjectUrlSoon(url?: string) {
 }
 
 function App() {
+  const persistedSettings = useMemo(() => readPersistedSettings(), []);
+
   const [jobs, setJobs] = useState<ImageJob[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [queueFilter, setQueueFilter] = useState<QueueFilter>("all");
-  const [mode, setMode] = useState<RemovalMode>("balanced");
-  const [executionDevice, setExecutionDevice] = useState<ExecutionDevice>("cpu");
-  const [background, setBackground] = useState<PreviewBackground>("checker");
-  const [customBackground, setCustomBackground] = useState("#f8fafc");
+  const [mode, setMode] = useState<RemovalMode>(persistedSettings.mode ?? "balanced");
+  const [executionDevice, setExecutionDevice] = useState<ExecutionDevice>(
+    persistedSettings.executionDevice ?? "cpu"
+  );
+  const [background, setBackground] = useState<PreviewBackground>(
+    persistedSettings.background ?? "checker"
+  );
+  const [customBackground, setCustomBackground] = useState(persistedSettings.customBackground ?? "#f8fafc");
   const [comparePosition, setComparePosition] = useState(50);
   const [isZipping, setIsZipping] = useState(false);
   const [isExportingSelected, setIsExportingSelected] = useState(false);
-  const [exportPresetId, setExportPresetId] = useState<ExportPresetId>("transparent");
-  const [exportSceneId, setExportSceneId] = useState<ExportSceneId>("transparent");
-  const [exportShadow, setExportShadow] = useState(false);
-  const [shadowIntensity, setShadowIntensity] = useState(45);
-  const [shadowBlur, setShadowBlur] = useState(28);
-  const [shadowOffset, setShadowOffset] = useState(24);
+  const [exportPresetId, setExportPresetId] = useState<ExportPresetId>(
+    persistedSettings.exportPresetId ?? "transparent"
+  );
+  const [exportSceneId, setExportSceneId] = useState<ExportSceneId>(
+    persistedSettings.exportSceneId ?? "transparent"
+  );
+  const [exportShadow, setExportShadow] = useState(
+    persistedSettings.exportSceneId === "transparent"
+      ? false
+      : persistedSettings.exportShadow ?? false
+  );
+  const [shadowIntensity, setShadowIntensity] = useState(persistedSettings.shadowIntensity ?? 45);
+  const [shadowBlur, setShadowBlur] = useState(persistedSettings.shadowBlur ?? 28);
+  const [shadowOffset, setShadowOffset] = useState(persistedSettings.shadowOffset ?? 24);
   const [composedPreviewUrl, setComposedPreviewUrl] = useState<string>();
   const [isComposingPreview, setIsComposingPreview] = useState(false);
   const jobsRef = useRef<ImageJob[]>([]);
@@ -195,6 +295,38 @@ function App() {
   );
   const [debouncedExportComposition, setDebouncedExportComposition] =
     useState<ExportComposition>(exportComposition);
+
+  useEffect(() => {
+    const next: StoredUISettings = {
+      mode,
+      executionDevice,
+      background,
+      customBackground,
+      exportPresetId,
+      exportSceneId,
+      exportShadow,
+      shadowIntensity,
+      shadowBlur,
+      shadowOffset,
+    };
+
+    try {
+      window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // Ignore storage failures (private mode, quota, etc).
+    }
+  }, [
+    mode,
+    executionDevice,
+    background,
+    customBackground,
+    exportPresetId,
+    exportSceneId,
+    exportShadow,
+    shadowIntensity,
+    shadowBlur,
+    shadowOffset,
+  ]);
 
   useEffect(() => {
     jobsRef.current = jobs;
