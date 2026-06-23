@@ -114,6 +114,10 @@ async function main() {
     assert(identity.queueTools >= 5, `Expected at least 5 queue tools, got ${identity.queueTools}`);
     assert(identity.rangeFields === 3, `Unexpected range field count: ${identity.rangeFields}`);
     assert(identity.overlayText === 0, "Framework error overlay detected.");
+    assert(
+      (await page.locator('button', { hasText: "Reset preferences" }).count()) > 0,
+      "Reset preferences control missing."
+    );
 
     await page.locator('input[type="file"]').setInputFiles(inputImage);
     await page.getByRole("button", { name: "Remove backgrounds" }).click();
@@ -182,6 +186,24 @@ async function main() {
 
     await page.screenshot({ path: screenshotPath, fullPage: false });
 
+    await page.locator('button', { hasText: "Reset preferences" }).click();
+    await assertSelectedCardContains(page, ".preset-card", "Transparent PNG", 30000);
+    await assertSelectedCardContains(page, ".scene-card", "Cutout", 30000);
+    const shadowInput = page.locator(".toggle-row input");
+    const shadowChecked = await shadowInput.isChecked();
+    const shadowDisabled = await shadowInput.isDisabled();
+    const firstSlider = page.locator(".range-field input").nth(0);
+    const secondSlider = page.locator(".range-field input").nth(1);
+    const thirdSlider = page.locator(".range-field input").nth(2);
+    assert(await firstSlider.isDisabled(), "Shadow controls should be disabled for transparent scene after reset.");
+    assert(await secondSlider.isDisabled(), "Shadow blur should be disabled for transparent scene after reset.");
+    assert(await thirdSlider.isDisabled(), "Shadow offset should be disabled for transparent scene after reset.");
+    assert((await firstSlider.inputValue()) === "45", "Shadow strength should reset to 45.");
+    assert((await secondSlider.inputValue()) === "28", "Shadow blur should reset to 28.");
+    assert((await thirdSlider.inputValue()) === "24", "Shadow offset should reset to 24.");
+    assert(!shadowChecked, "Reset preferences should disable and clear product shadow.");
+    assert(shadowDisabled, "Shadow control should be disabled for transparent scene after reset.");
+
     const relevantErrors = errors.filter((text) => !text.includes("favicon"));
     assert(relevantErrors.length === 0, `Console errors: ${relevantErrors.join(" | ")}`);
     assert(failedRequests.length === 0, `Failed requests: ${JSON.stringify(failedRequests)}`);
@@ -210,6 +232,25 @@ async function main() {
   } finally {
     await browser.close();
   }
+}
+
+async function assertSelectedCardContains(page, selector, expectedText, timeout = 10000) {
+  const found = await page.waitForFunction(
+    (args) => {
+      const [selector, expectedText] = args;
+      const cards = Array.from(document.querySelectorAll(selector));
+
+      return cards.some(
+        (card) =>
+          card instanceof HTMLElement &&
+          card.classList.contains("selected") &&
+          card.textContent?.includes(expectedText)
+      );
+    },
+    [selector, expectedText],
+    { timeout }
+  );
+  assert(found !== null, `Expected selected ${selector} to include ${expectedText}.`);
 }
 
 main().catch((error) => {
