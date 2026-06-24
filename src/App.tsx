@@ -12,6 +12,7 @@ import {
   Loader2,
   Lock,
   Maximize2,
+  Move,
   Package,
   Palette,
   RefreshCw,
@@ -25,7 +26,14 @@ import {
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
-import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Dropzone } from "./components/Dropzone";
 import {
   removeImageBackground,
@@ -108,6 +116,8 @@ const previewBackgroundOptions: Array<{ id: PreviewBackground; label: string }> 
   { id: "brand", label: "Brand" },
 ];
 
+const DEFAULT_PREVIEW_PAN: PreviewPan = { x: 0, y: 0 };
+
 const DEFAULT_UI_SETTINGS: Required<StoredUISettings> = {
   ...QA_UI_DEFAULTS,
 };
@@ -135,6 +145,19 @@ type ExportLogItem = {
 type BatchManifestInputItem = {
   job: ImageJob;
   outputFile: string;
+};
+
+type PreviewPan = {
+  x: number;
+  y: number;
+};
+
+type PreviewPanGesture = {
+  pointerId: number;
+  startX: number;
+  startY: number;
+  originX: number;
+  originY: number;
 };
 
 type QAUiDefaultsContract = {
@@ -224,6 +247,25 @@ function truncateText(value: string | undefined, maxLength: number) {
   if (!value) return "";
   if (value.length <= maxLength) return value;
   return `${value.slice(0, maxLength - 3)}...`;
+}
+
+function clampPreviewPanForZoom(pan: PreviewPan, zoom: number): PreviewPan {
+  const zoomScale = zoom / QA_PREVIEW_ZOOM.default;
+  if (zoomScale <= 1) return DEFAULT_PREVIEW_PAN;
+
+  const maxX = Math.round((zoomScale - 1) * 360);
+  const maxY = Math.round((zoomScale - 1) * 280);
+
+  return {
+    x: Math.min(maxX, Math.max(-maxX, Math.round(pan.x))),
+    y: Math.min(maxY, Math.max(-maxY, Math.round(pan.y))),
+  };
+}
+
+function applyPreviewPanStyle(frame: HTMLDivElement | null, pan: PreviewPan) {
+  if (!frame) return;
+  frame.style.setProperty("--preview-pan-x", `${pan.x}px`);
+  frame.style.setProperty("--preview-pan-y", `${pan.y}px`);
 }
 
 function csvValue(value: string | number | boolean) {
@@ -532,6 +574,7 @@ function App() {
   );
   const [comparePosition, setComparePosition] = useState(50);
   const [previewZoom, setPreviewZoom] = useState(QA_PREVIEW_ZOOM.default);
+  const [previewPan, setPreviewPan] = useState<PreviewPan>(DEFAULT_PREVIEW_PAN);
   const [isZipping, setIsZipping] = useState(false);
   const [isExportingSelected, setIsExportingSelected] = useState(false);
   const [exportLog, setExportLog] = useState<ExportLogItem[]>(() => readExportLogFromStorage());
@@ -559,6 +602,9 @@ function App() {
   const [isComposingPreview, setIsComposingPreview] = useState(false);
   const jobsRef = useRef<ImageJob[]>([]);
   const composedPreviewUrlRef = useRef<string | undefined>(undefined);
+  const comparisonFrameRef = useRef<HTMLDivElement>(null);
+  const previewPanRef = useRef<PreviewPan>(DEFAULT_PREVIEW_PAN);
+  const previewPanGestureRef = useRef<PreviewPanGesture | null>(null);
 
   const stats = useMemo(() => {
     const ready = jobs.filter((job) => job.status === "ready").length;
@@ -612,6 +658,27 @@ function App() {
   }, [visibleCount, queueFilter]);
 
   const hasProcessingJobs = stats.processing > 0;
+  const isPreviewPannable = selectedJob?.status === "done" && previewZoom > QA_PREVIEW_ZOOM.default;
+
+  useEffect(() => {
+    previewPanRef.current = previewPan;
+    applyPreviewPanStyle(comparisonFrameRef.current, previewPan);
+  }, [previewPan]);
+
+  useEffect(() => {
+    previewPanGestureRef.current = null;
+    setPreviewPan(DEFAULT_PREVIEW_PAN);
+  }, [selectedJob?.id]);
+
+  useEffect(() => {
+    if (previewZoom <= QA_PREVIEW_ZOOM.default) {
+      previewPanGestureRef.current = null;
+      setPreviewPan(DEFAULT_PREVIEW_PAN);
+      return;
+    }
+
+    setPreviewPan((current) => clampPreviewPanForZoom(current, previewZoom));
+  }, [previewZoom]);
 
   const resolveQueueFilter = (nextJobs: ImageJob[]): QueueFilter => {
     if (nextJobs.some((job) => job.status === "ready")) return "ready";
@@ -1008,6 +1075,56 @@ function App() {
     });
   };
 
+  const centerPreviewPan = () => {
+    previewPanGestureRef.current = null;
+    previewPanRef.current = DEFAULT_PREVIEW_PAN;
+    applyPreviewPanStyle(comparisonFrameRef.current, DEFAULT_PREVIEW_PAN);
+    setPreviewPan(DEFAULT_PREVIEW_PAN);
+  };
+
+  const handlePreviewPanStart = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!isPreviewPannable) return;
+
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    previewPanGestureRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: previewPanRef.current.x,
+      originY: previewPanRef.current.y,
+    };
+    event.currentTarget.classList.add("panning");
+  };
+
+  const handlePreviewPanMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const gesture = previewPanGestureRef.current;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+
+    event.preventDefault();
+    const nextPan = clampPreviewPanForZoom(
+      {
+        x: gesture.originX + event.clientX - gesture.startX,
+        y: gesture.originY + event.clientY - gesture.startY,
+      },
+      previewZoom
+    );
+    previewPanRef.current = nextPan;
+    applyPreviewPanStyle(comparisonFrameRef.current, nextPan);
+  };
+
+  const handlePreviewPanEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const gesture = previewPanGestureRef.current;
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    event.currentTarget.classList.remove("panning");
+    previewPanGestureRef.current = null;
+    setPreviewPan(previewPanRef.current);
+  };
+
   const resetPreferences = () => {
     try {
       window.localStorage.removeItem(QA_SETTINGS_STORAGE_KEY);
@@ -1027,6 +1144,7 @@ function App() {
     setShadowOffset(DEFAULT_UI_SETTINGS.shadowOffset);
     setComparePosition(50);
     setPreviewZoom(QA_PREVIEW_ZOOM.default);
+    centerPreviewPan();
   };
 
   return (
@@ -1356,19 +1474,27 @@ function App() {
               >
                 <div className="comparison-shell">
                   <div
-                    className="comparison-frame"
+                    className={`comparison-frame ${isPreviewPannable ? "can-pan" : ""}`}
+                    ref={comparisonFrameRef}
                     style={
                       {
+                        "--preview-pan-x": `${previewPan.x}px`,
+                        "--preview-pan-y": `${previewPan.y}px`,
                         "--split": `${comparePosition}%`,
                         "--preview-zoom": String(previewZoom / 100),
                       } as CSSProperties
                     }
+                    onPointerDown={handlePreviewPanStart}
+                    onPointerMove={handlePreviewPanMove}
+                    onPointerUp={handlePreviewPanEnd}
+                    onPointerCancel={handlePreviewPanEnd}
                   >
                     {selectedJob.status === "done" && selectedJob.outputUrl ? (
                       <>
                         <img
                           className="comparison-image comparison-output"
                           src={composedPreviewUrl ?? selectedJob.outputUrl}
+                          draggable="false"
                           alt=""
                         />
                         {isComposingPreview ? (
@@ -1381,6 +1507,7 @@ function App() {
                           <img
                             className="comparison-image comparison-original"
                             src={selectedJob.sourceUrl}
+                            draggable="false"
                             alt=""
                           />
                         </div>
@@ -1395,6 +1522,7 @@ function App() {
                         <img
                           className="comparison-image source-only"
                           src={selectedJob.sourceUrl}
+                          draggable="false"
                           alt=""
                         />
                         <div className="empty-result comparison-overlay">
@@ -1475,17 +1603,30 @@ function App() {
                         aria-label="Preview zoom"
                       />
                       <ZoomIn size={16} />
-                      <button
-                        className="comparison-quick-button"
-                        type="button"
-                        title="Fit preview"
-                        aria-label="Fit preview"
-                        disabled={selectedJob.status !== "done"}
-                        onClick={() => setPreviewZoom(QA_PREVIEW_ZOOM.default)}
-                      >
-                        <Maximize2 size={14} />
-                        Fit
-                      </button>
+                      <span className="review-zoom-actions">
+                        <button
+                          className="comparison-quick-button"
+                          type="button"
+                          title="Fit preview"
+                          aria-label="Fit preview"
+                          disabled={selectedJob.status !== "done"}
+                          onClick={() => setPreviewZoom(QA_PREVIEW_ZOOM.default)}
+                        >
+                          <Maximize2 size={14} />
+                          Fit
+                        </button>
+                        <button
+                          className="comparison-quick-button"
+                          type="button"
+                          title="Center preview"
+                          aria-label="Center preview"
+                          disabled={!isPreviewPannable}
+                          onClick={centerPreviewPan}
+                        >
+                          <Move size={14} />
+                          Center
+                        </button>
+                      </span>
                     </div>
                     <span className="review-background-controls" role="group" aria-label="Preview background presets">
                       {previewBackgroundOptions.map((option) => (

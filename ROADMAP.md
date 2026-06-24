@@ -7,11 +7,11 @@ This roadmap favors local-first workflows that can replace credit-based backgrou
 - Keep CI, contributor docs, and security posture healthy.
 - Preserve the D-drive storage rule for local development and QA artifacts.
 - Keep batch processing easy to trust with clear queue state and export feedback.
-- Keep preview review controls practical for edge-quality checks before export.
+- Keep zoom-and-pan preview review practical for edge-quality checks before export.
 
 ## Next
 
-- Add finer preview inspection controls for very large images.
+- Add mask/edge overlay review for difficult cutouts.
 - Add export preset documentation with examples for marketplace and creator workflows.
 - Add a richer public demo capture that does not use private or sensitive source images.
 

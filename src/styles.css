@@ -656,6 +656,8 @@ a {
 
 .comparison-frame {
   --preview-zoom: 1;
+  --preview-pan-x: 0px;
+  --preview-pan-y: 0px;
   position: relative;
   display: grid;
   min-height: calc(100vh - 270px);
@@ -666,15 +668,29 @@ a {
   border-radius: 8px;
 }
 
+.comparison-frame.can-pan {
+  cursor: grab;
+  touch-action: none;
+}
+
+.comparison-frame.can-pan.panning {
+  cursor: grabbing;
+}
+
+.comparison-frame.panning .comparison-image {
+  transition: none;
+}
+
 .comparison-image {
   display: block;
   width: min(100%, 720px);
   max-width: 720px;
   max-height: 68vh;
   object-fit: contain;
-  transform: scale(var(--preview-zoom));
+  transform: translate3d(var(--preview-pan-x), var(--preview-pan-y), 0) scale(var(--preview-zoom));
   transform-origin: center;
   transition: transform 160ms ease;
+  user-select: none;
 }
 
 .comparison-output,
@@ -824,6 +840,13 @@ a {
 
 .review-zoom-controls input {
   width: 100%;
+}
+
+.review-zoom-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .review-background-controls {
@@ -1365,6 +1388,15 @@ a {
 
   .comparison-frame {
     min-height: 320px;
+  }
+
+  .review-zoom-controls {
+    grid-template-columns: 18px minmax(0, 1fr) 18px;
+  }
+
+  .review-zoom-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
   }
 
   .progress-steps {

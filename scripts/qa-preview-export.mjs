@@ -323,6 +323,34 @@ async function main() {
     );
     assert(zoomState.outputTransform !== "none", "Preview image should be transformed after zoom.");
 
+    const comparisonFrame = page.locator(".comparison-frame");
+    const frameBox = await comparisonFrame.boundingBox();
+    assert(frameBox, "Comparison frame should have a visible bounding box for pan testing.");
+    await page.mouse.move(frameBox.x + frameBox.width / 2, frameBox.y + frameBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(frameBox.x + frameBox.width / 2 + 42, frameBox.y + frameBox.height / 2 - 28);
+    await page.mouse.up();
+    const panState = await comparisonFrame.evaluate((node) => {
+      const styles = getComputedStyle(node);
+      return {
+        x: styles.getPropertyValue("--preview-pan-x").trim(),
+        y: styles.getPropertyValue("--preview-pan-y").trim(),
+      };
+    });
+    assert(panState.x !== "0px", `Preview pan x should move after drag: ${panState.x}`);
+    assert(panState.y !== "0px", `Preview pan y should move after drag: ${panState.y}`);
+
+    await page.getByRole("button", { name: "Center preview" }).click();
+    const centeredPanState = await comparisonFrame.evaluate((node) => {
+      const styles = getComputedStyle(node);
+      return {
+        x: styles.getPropertyValue("--preview-pan-x").trim(),
+        y: styles.getPropertyValue("--preview-pan-y").trim(),
+      };
+    });
+    assert(centeredPanState.x === "0px", `Center preview should reset pan x: ${centeredPanState.x}`);
+    assert(centeredPanState.y === "0px", `Center preview should reset pan y: ${centeredPanState.y}`);
+
     await page.getByRole("button", { name: "Fit preview" }).click();
     assert(
       (await zoomInput.inputValue()) === String(QA_PREVIEW_ZOOM.default),
