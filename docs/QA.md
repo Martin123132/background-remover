@@ -33,6 +33,7 @@ Checks performed:
 - Verifies a manifest CSV (`*-manifest.csv`) is included in the ZIP with per-item rows.
 - Verifies a persistent local export-log entry is written in `background-remover-export-log-v1`.
 - Verifies queue history exposes a per-run manifest download action and that downloading it yields matching entries.
+- Verifies queue history can restore a previous run's preset, scene, shadow toggle, and shadow slider values.
 - Verifies queue history can be cleared from the new **Clear export log** control and removes the history UI.
 - Verifies reset-preference flow restores defaults and disables shadow controls on transparent scene.
 - Fails the run on console errors or failed network requests.
@@ -60,9 +61,19 @@ Generate the public README screenshot with:
 npm.cmd run capture:demo
 ```
 
+Generate the public preset gallery with:
+
+```powershell
+npm.cmd run capture:preset-gallery
+```
+
 Artifacts go to:
 
 - `D:\open-source\background-remover\docs\assets\background-remover-demo.png`
+- `D:\open-source\background-remover\docs\assets\preset-transparent-png.png`
+- `D:\open-source\background-remover\docs\assets\preset-marketplace-square.png`
+- `D:\open-source\background-remover\docs\assets\preset-social-avatar.png`
+- `D:\open-source\background-remover\docs\assets\preset-video-thumbnail.png`
 
 ## Environment overrides
 
@@ -77,6 +88,8 @@ Useful for custom fixtures/scenes or browser setup:
 - `BACKGROUND_REMOVER_DEMO_SHADOW_STRENGTH`
 - `BACKGROUND_REMOVER_DEMO_SHADOW_BLUR`
 - `BACKGROUND_REMOVER_DEMO_SHADOW_OFFSET`
+
+For static hosting checks, `npm.cmd run build:github-pages` verifies the GitHub Pages base-path build.
 
 ## Cleanup
 

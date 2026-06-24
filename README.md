@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Martin123132/background-remover/actions/workflows/ci.yml/badge.svg)](https://github.com/Martin123132/background-remover/actions/workflows/ci.yml)
 
-An AGPL local-first background remover aimed at replacing credit-based background removal subscriptions for everyday product, creator, and marketplace workflows.
+A local-first, source-available background remover for personal and non-commercial product, creator, and marketplace workflows.
 
 ![Background Remover demo](docs/assets/background-remover-demo.png)
 
@@ -19,11 +19,12 @@ The demo above is a real processed output generated from the repo-local fixture 
 - Handles duplicate source filenames during ZIP export by appending `-2`, `-3`, etc. to output names so entries remain unique.
 - Names ZIP exports with the selected preset, composition scene, and processed image count.
 - Adds a lightweight, persistent export manifest log kept in browser storage and downloadable as CSV.
-- Supports quick per-run manifest downloads from the recent-export history panel.
+- Supports quick per-run manifest downloads and settings restore from the recent-export history panel.
 - Remembers export, scene, and shadow preferences across browser reloads, with a top-right reset action.
 - Uses self-hosted model/WASM assets from `public/models/background-removal`.
 
 More on presets and composition scenes is in [Export presets and scenes](docs/EXPORT_PRESETS.md).
+Static hosting notes are in [Static deployment](docs/DEPLOYMENT.md).
 
 ## Queue workflow
 
@@ -38,6 +39,7 @@ More on presets and composition scenes is in [Export presets and scenes](docs/EX
   - Failed
 - Export processed items only with **Export processed ZIP**.
 - Download a persisted batch export history CSV with **Export log**.
+- Restore a previous run's preset, scene, and shadow controls with **Use settings**.
 - Clear export run history with **Clear export log**.
 - Clear completed/failed workflow noise with **Clear processed** and **Clear failed**.
 - Remove individual items from the queue with the per-item remove action.
@@ -75,13 +77,17 @@ After bootstrap, these package scripts are available:
 npm.cmd run dev
 npm.cmd run lint
 npm.cmd run build
+npm.cmd run build:github-pages
 npm.cmd run check
 npm.cmd run qa
 npm.cmd run capture:demo
+npm.cmd run capture:preset-gallery
 npm.cmd run clean:qa-artifacts
 ```
 
 `npm.cmd run check` runs lint followed by the production build. There is no separate unit-test suite yet; the browser regression check below is the current end-to-end QA path documented in [QA.md](docs/QA.md).
+
+`npm.cmd run build:github-pages` builds the static app with `/background-remover/` as the Vite base path for GitHub Pages-style hosting.
 
 ## Storage rule
 
@@ -105,6 +111,7 @@ The command starts the local Vite app on `http://127.0.0.1:5175/` when one is no
 - The live composed preview stays capped at `900x900` so slider changes do not repeatedly render full-size output.
 - Review controls update preview zoom/pan, mask/edge overlays, fit/center reset, and dark/checker backdrop state without affecting export quality.
 - The selected PNG export and ZIP exports remain full preset quality at `2000x2000`.
+- Recent export history restores prior preset, scene, and shadow settings.
 - Queue controls are locked while batch processing is running.
 
 QA artifacts are written under `D:\open-source\background-remover\.tmp\qa-preview-export\`, including:
@@ -136,6 +143,12 @@ Regenerate the README screenshot with:
 npm.cmd run capture:demo
 ```
 
+Regenerate the preset gallery with:
+
+```powershell
+npm.cmd run capture:preset-gallery
+```
+
 You can use these optional environment overrides to capture a different demo state:
 
 ```powershell
@@ -147,6 +160,15 @@ $env:BACKGROUND_REMOVER_DEMO_SHADOW_BLUR="34"
 $env:BACKGROUND_REMOVER_DEMO_SHADOW_OFFSET="24"
 ```
 
+## Preset examples
+
+The preset gallery in [Export presets and scenes](docs/EXPORT_PRESETS.md) is generated from the same safe repo fixture as the README demo with `npm.cmd run capture:preset-gallery`. It gives users a quick view of the intended outputs:
+
+- Transparent PNG for downstream editors.
+- Marketplace square for catalogue/product-card uploads.
+- Social avatar for profile images.
+- Video thumbnail for creator cards.
+
 ## Project layout
 
 ```text
@@ -154,14 +176,17 @@ src/                              React app and image workflow
 src/lib/                          Background removal, file, and export helpers
 scripts/                          D-drive-safe setup, dev, model, and QA scripts
 public/models/background-removal/ Downloaded model and WASM assets, ignored except .gitkeep
+docs/assets/                      Safe public screenshots and preset captures
 ```
 
 ## Contributing and security
 
-See `CONTRIBUTING.md` for setup, QA, and pull request guidance. See `SECURITY.md` for vulnerability reporting and the project security goals.
+See `CONTRIBUTING.md` for setup, QA, and pull request guidance. See `SUPPORT.md` for useful issue reports. See `SECURITY.md` for vulnerability reporting and the project security goals.
 
 See `ROADMAP.md` for planned work and `CHANGELOG.md` for release history.
 
 ## License
 
-AGPL-3.0-or-later. See `LICENSE`; hosted modified versions should publish their corresponding source code.
+PolyForm Noncommercial 1.0.0. See `LICENSE`, `NOTICE.md`, and `COMMERCIAL-LICENSE.md`.
+
+Personal, hobby, research, educational, public-interest, and other non-commercial uses are permitted. Commercial use requires a separate written license from TWO HANDS NETWORK LTD.

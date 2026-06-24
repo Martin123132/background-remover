@@ -17,8 +17,7 @@ cd D:\open-source\background-remover
 Run the standard checks:
 
 ```powershell
-npm.cmd run lint
-npm.cmd run build
+npm.cmd run check
 ```
 
 For browser-level export coverage, run:
@@ -37,9 +36,11 @@ npm.cmd run clean:qa-artifacts
 
 - Keep source images local; do not add upload-based workflows.
 - Keep generated files, caches, screenshots, model blobs, and temporary exports out of Git.
-- Preserve the AGPL-3.0-or-later license posture.
+- Public demo screenshots should use repo-safe fixtures such as `test-fixtures/safe-product-mug.png`.
+- Preserve the PolyForm Noncommercial source-available license posture.
 - Prefer small pull requests with one clear product or maintenance improvement.
 - Include notes about manual QA when touching image processing, export presets, or browser interactions.
+- Run `npm.cmd run build:github-pages` when changing asset paths, model public paths, or static deployment behavior.
 
 ## Issue reports
 
@@ -48,4 +49,5 @@ Useful bug reports include:
 - Browser and operating system.
 - Input image type and rough dimensions.
 - The selected model, background mode, export preset, and shadow settings.
+- Review overlay, export history action, or static hosting path if relevant.
 - Whether `npm.cmd run qa:preview-export` passes locally.

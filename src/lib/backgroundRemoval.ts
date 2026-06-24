@@ -28,7 +28,11 @@ type RemovalOptions = {
   onProgress?: (progress: RemovalProgress) => void;
 };
 
-const configuredAssetPath = import.meta.env.VITE_BG_ASSET_PATH ?? "/models/background-removal/";
+const defaultAssetPath = `${import.meta.env.BASE_URL}models/background-removal/`;
+const configuredAssetPath =
+  import.meta.env.BASE_URL !== "/" && import.meta.env.VITE_BG_ASSET_PATH === "/models/background-removal/"
+    ? defaultAssetPath
+    : import.meta.env.VITE_BG_ASSET_PATH ?? defaultAssetPath;
 
 function getAssetPath(): string {
   return new URL(configuredAssetPath, window.location.href).href;

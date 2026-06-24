@@ -311,7 +311,7 @@ function readExportLogFromStorage(): ExportLogItem[] {
           Array.isArray(entry?.items)
         );
       })
-      .slice(-EXPORT_LOG_LIMIT);
+      .slice(0, EXPORT_LOG_LIMIT);
   } catch {
     return [];
   }
@@ -1078,6 +1078,15 @@ function App() {
   const downloadManifestForHistoryEntry = (entry: ExportLogItem) => {
     const csv = buildExportManifestCsvFromLog(entry);
     downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), entry.manifestFile);
+  };
+
+  const reuseExportSettings = (entry: ExportLogItem) => {
+    setExportPresetId(entry.presetId);
+    setExportSceneId(entry.sceneId);
+    setExportShadow(entry.shadow);
+    setShadowIntensity(clampNumber(entry.shadowIntensity, QA_SHADOW_SLIDERS.intensity.min, QA_SHADOW_SLIDERS.intensity.max));
+    setShadowBlur(clampNumber(entry.shadowBlur, QA_SHADOW_SLIDERS.blur.min, QA_SHADOW_SLIDERS.blur.max));
+    setShadowOffset(clampNumber(entry.shadowOffset, QA_SHADOW_SLIDERS.offset.min, QA_SHADOW_SLIDERS.offset.max));
   };
 
   const removeJobs = (ids: string[], options?: { confirmMessage?: string; keepFilter?: boolean }) => {
@@ -1917,6 +1926,16 @@ function App() {
                       </div>
                       <div className="export-history-meta">manifest: {entry.manifestFile}</div>
                       <div className="export-history-actions">
+                        <button
+                          className="export-history-action"
+                          disabled={hasProcessingJobs || isZipping || isExportingSelected}
+                          onClick={() => reuseExportSettings(entry)}
+                          title="Reuse this run's preset, scene, and shadow settings"
+                          type="button"
+                        >
+                          <SlidersHorizontal size={14} />
+                          Use settings
+                        </button>
                         <button
                           className="export-history-action"
                           onClick={() => downloadManifestForHistoryEntry(entry)}

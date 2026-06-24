@@ -8,11 +8,12 @@ This roadmap favors local-first workflows that can replace credit-based backgrou
 - Preserve the D-drive storage rule for local development and QA artifacts.
 - Keep batch processing easy to trust with clear queue state and export feedback.
 - Keep zoom, pan, mask, and edge preview review practical for edge-quality checks before export.
+- Keep public demo assets reproducible from safe repo fixtures.
 
 ## Next
 
-- Add export preset documentation with examples for marketplace and creator workflows.
-- Add a richer public demo capture that does not use private or sensitive source images.
+- Add optional hosted demo once GitHub Pages is enabled in repository settings.
+- Add more marketplace and creator presets based on real repeated workflows.
 
 ## Later
 

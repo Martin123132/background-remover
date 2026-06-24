@@ -19,4 +19,4 @@ Good reports include:
 
 - Source images should stay local to the browser session.
 - Development caches, temporary files, and QA artifacts should remain under the D-drive project paths documented in the README.
-- Hosted modified versions should publish corresponding source code under the AGPL-3.0-or-later license.
+- Commercial use should follow `COMMERCIAL-LICENSE.md`; public non-commercial use should preserve the required notices in `LICENSE` and `NOTICE.md`.

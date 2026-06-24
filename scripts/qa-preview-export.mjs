@@ -510,6 +510,10 @@ async function main() {
       (await page.locator('.export-history-action', { hasText: "Download manifest" }).count()) === 1,
       "Expected exactly one visible per-run manifest download action."
     );
+    assert(
+      (await page.locator('.export-history-action', { hasText: "Use settings" }).count()) === 1,
+      "Expected exactly one visible per-run settings reuse action."
+    );
     const historyDownloadPath = path.join(downloadDir, expectedManifestFilename);
     if (fs.existsSync(historyDownloadPath)) fs.rmSync(historyDownloadPath, { force: true });
     const [historyManifestDownload] = await Promise.all([
@@ -531,6 +535,19 @@ async function main() {
         `History manifest missing output file: ${entry}`
       );
     }
+
+    await page.locator(".preset-card", { hasText: "Video thumbnail" }).click();
+    await page.locator(".scene-card", { hasText: "Graphite" }).click();
+    await sliders.nth(0).fill(String(QA_SHADOW_SLIDERS.intensity.min));
+    await sliders.nth(1).fill(String(QA_SHADOW_SLIDERS.blur.min));
+    await sliders.nth(2).fill(String(QA_SHADOW_SLIDERS.offset.min));
+    await page.locator('.export-history-action', { hasText: "Use settings" }).click();
+    await assertSelectedCardHasId(page, ".preset-card", "data-preset-id=marketplace", 10000);
+    await assertSelectedCardHasId(page, ".scene-card", "data-scene-id=warm", 10000);
+    assert(await page.locator(".toggle-row input").isChecked(), "Reused export settings should restore shadow enabled state.");
+    assert((await sliders.nth(0).inputValue()) === String(shadowValues[0]), "Reused export settings should restore shadow strength.");
+    assert((await sliders.nth(1).inputValue()) === String(shadowValues[1]), "Reused export settings should restore shadow blur.");
+    assert((await sliders.nth(2).inputValue()) === String(shadowValues[2]), "Reused export settings should restore shadow offset.");
 
     await page.screenshot({ path: screenshotPath, fullPage: false });
 

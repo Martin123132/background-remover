@@ -18,6 +18,12 @@ All notable changes to this project will be documented here.
 - Add issue and pull request templates.
 - Add GitHub Actions CI for lint and production build checks.
 - Add contributor and security policy documents.
+- Add mask and edge review overlays for cutout inspection.
+- Add export-history settings restore for repeating previous preset, scene, and shadow choices.
+- Add safe preset example captures and clearer public-facing export preset documentation.
+- Add a repeatable preset-gallery capture command.
+- Add optional GitHub Pages static build script and deployment notes.
+- Make model asset paths follow the Vite base path by default for subpath hosting.
 
 ## 0.1.0 - 2026-06-22
 

@@ -1,0 +1,58 @@
+# Static Deployment
+
+Background Remover can be built as a static app. The app still runs background removal in the browser and still expects model assets to be served from the same deployed site.
+
+## Local production build
+
+```powershell
+cd D:\open-source\background-remover
+npm.cmd run build
+```
+
+The build output is written to:
+
+```text
+D:\open-source\background-remover\dist\
+```
+
+## GitHub Pages build
+
+For the repository path `https://<user>.github.io/background-remover/`, build with:
+
+```powershell
+npm.cmd run build:github-pages
+```
+
+This runs Vite with:
+
+```text
+--base=/background-remover/
+```
+
+The background-removal model path follows Vite's base path by default, so static hosts under a subdirectory can serve:
+
+```text
+/background-remover/models/background-removal/
+```
+
+## Custom static host path
+
+For a different subpath, call Vite directly with the right base:
+
+```powershell
+npm.cmd run build -- --base=/your-path/
+```
+
+If model assets are hosted somewhere else on the same origin, override the asset path:
+
+```powershell
+$env:VITE_BG_ASSET_PATH="/your-model-path/"
+npm.cmd run build -- --base=/your-path/
+```
+
+## Notes
+
+- Do not commit `dist/`; it is generated output.
+- Do not commit downloaded model blobs under `public/models/background-removal/`.
+- Keep static hosting consistent with the PolyForm Noncommercial public license and required notices.
+- GitHub Pages must be enabled in the repository settings before the static build is publicly served.
