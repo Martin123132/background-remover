@@ -33,6 +33,5 @@ Product shadows can be enabled for non-transparent scenes only.
 ## Export naming
 
 - Single image export uses: `<original-name>-<preset-suffix>.png`
-- ZIP export uses: `background-remover-<preset>-<size>-<n>-image.zip`
+- ZIP export uses: `background-remover-<preset>-<size>-<scene>-<n>-images.zip`
 - ZIP export includes only items with completed outputs.
-

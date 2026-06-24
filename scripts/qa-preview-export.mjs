@@ -23,8 +23,10 @@ const inputImage =
   path.join(projectRoot, "test-fixtures", "safe-product-mug.png");
 const inputBaseName = path.parse(inputImage).name;
 const qaInputImages = [inputImage, inputImage];
-const selectedPath = path.join(artifactDir, `${inputBaseName}-marketplace-2000.png`);
-const zipFilename = `background-remover-marketplace-2000-${qaInputImages.length}-images.zip`;
+const selectedPresetSuffix = "marketplace-2000";
+const selectedSceneId = "warm";
+const selectedPath = path.join(artifactDir, `${inputBaseName}-${selectedPresetSuffix}.png`);
+const zipFilename = `background-remover-${selectedPresetSuffix}-${selectedSceneId}-${qaInputImages.length}-images.zip`;
 const zipPath = path.join(
   artifactDir,
   zipFilename
@@ -318,7 +320,7 @@ async function main() {
     ]);
     const zipSuggestedFilename = zipDownload.suggestedFilename();
     assert(
-      zipSuggestedFilename === `background-remover-marketplace-2000-${qaInputImages.length}-images.zip`,
+      zipSuggestedFilename === zipFilename,
       `Unexpected ZIP filename: ${zipSuggestedFilename}`
     );
     await zipDownload.saveAs(zipPath);

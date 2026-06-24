@@ -16,7 +16,7 @@ The demo above is a real processed output generated from the repo-local fixture 
 - Adds product-photo backgrounds, marketplace export presets, shadows, and ZIP export.
 - Exports completed batch items separately from pending or failed queue items.
 - Handles duplicate source filenames during ZIP export by appending `-2`, `-3`, etc. to output names so entries remain unique.
-- Names ZIP exports with the selected preset and processed image count.
+- Names ZIP exports with the selected preset, composition scene, and processed image count.
 - Adds a lightweight, persistent export manifest log kept in browser storage and downloadable as CSV.
 - Supports quick per-run manifest downloads from the recent-export history panel.
 - Remembers export, scene, and shadow preferences across browser reloads, with a top-right reset action.
@@ -109,7 +109,7 @@ QA artifacts are written under `D:\open-source\background-remover\.tmp\qa-previe
 
 - `preview-performance-result.png`
 - `safe-product-mug-marketplace-2000.png`
-- `background-remover-marketplace-2000-2-images.zip`
+- `background-remover-marketplace-2000-warm-2-images.zip`
 
 Server logs for a QA-started dev server are written to:
 

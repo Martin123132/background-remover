@@ -144,7 +144,7 @@ async function main() {
       await shadowToggle.uncheck();
     }
 
-    await page.locator(".queue-tool", { hasText: "To process" }).click();
+    await page.locator(".queue-tool", { hasText: "Process queue" }).click();
     await page.locator(".comparison-output").waitFor({ state: "visible", timeout: 120000 });
     await page.waitForFunction(() => {
       const img = document.querySelector(".comparison-output");

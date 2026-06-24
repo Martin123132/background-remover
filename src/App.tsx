@@ -839,7 +839,7 @@ function App() {
   };
 
   const downloadProcessedZip = async () => {
-    const doneJobs = jobs.filter((job) => job.outputBlob);
+    const doneJobs = jobs.filter((job) => job.status === "done" && job.outputBlob);
 
     if (doneJobs.length === 0) return;
 
@@ -849,7 +849,7 @@ function App() {
       const runAt = new Date().toISOString();
       const baseFilenames = doneJobs.map((job) => outputFilename(job.file.name, exportPreset.suffix));
       const uniqueFilenames = uniquifyFilenames(baseFilenames);
-      const zipFilename = batchZipFilename(exportPreset.suffix, doneJobs.length);
+      const zipFilename = batchZipFilename(exportPreset.suffix, doneJobs.length, exportSceneId);
       const manifestFilename = `${zipFilename.replace(/\.zip$/, "")}-manifest.csv`;
       const manifestItems = doneJobs.map((job, index) => ({
         job,

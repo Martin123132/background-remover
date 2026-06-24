@@ -48,9 +48,10 @@ export function uniquifyFilenames(names: string[]): string[] {
   });
 }
 
-export function batchZipFilename(suffix: string, count: number): string {
+export function batchZipFilename(suffix: string, count: number, sceneId?: string): string {
   const countLabel = count === 1 ? "1-image" : `${count}-images`;
-  return `background-remover-${suffix}-${countLabel}.zip`;
+  const sceneSuffix = sceneId ? `-${sceneId}` : "";
+  return `background-remover-${suffix}${sceneSuffix}-${countLabel}.zip`;
 }
 
 export async function downloadZip(
