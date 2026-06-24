@@ -102,6 +102,35 @@ async function imageInfo(page, selector) {
   });
 }
 
+async function overlayInfo(page, selector) {
+  return page.locator(selector).evaluate(async (img) => {
+    if (!img.complete) {
+      await new Promise((resolve, reject) => {
+        img.addEventListener("load", resolve, { once: true });
+        img.addEventListener("error", reject, { once: true });
+      });
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context.drawImage(img, 0, 0);
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    let alphaPixels = 0;
+
+    for (let index = 3; index < pixels.length; index += 4) {
+      if (pixels[index] > 16) alphaPixels += 1;
+    }
+
+    return {
+      alphaPixels,
+      height: img.naturalHeight,
+      width: img.naturalWidth,
+    };
+  });
+}
+
 async function waitForProcessingState(page, timeoutMs = 30000) {
   try {
     await page.waitForFunction(
@@ -324,12 +353,25 @@ async function main() {
     assert(zoomState.outputTransform !== "none", "Preview image should be transformed after zoom.");
 
     const comparisonFrame = page.locator(".comparison-frame");
+    await page.locator(".comparison-frame.can-pan").waitFor({ state: "visible", timeout: 10000 });
+    await comparisonFrame.scrollIntoViewIfNeeded();
     const frameBox = await comparisonFrame.boundingBox();
     assert(frameBox, "Comparison frame should have a visible bounding box for pan testing.");
-    await page.mouse.move(frameBox.x + frameBox.width / 2, frameBox.y + frameBox.height / 2);
+    await page.mouse.move(frameBox.x + frameBox.width * 0.65, frameBox.y + frameBox.height / 2);
     await page.mouse.down();
-    await page.mouse.move(frameBox.x + frameBox.width / 2 + 42, frameBox.y + frameBox.height / 2 - 28);
+    await page.mouse.move(frameBox.x + frameBox.width * 0.65 + 42, frameBox.y + frameBox.height / 2 - 28, {
+      steps: 8,
+    });
     await page.mouse.up();
+    await page.waitForFunction(() => {
+      const element = document.querySelector(".comparison-frame");
+      if (!element) return false;
+      const styles = getComputedStyle(element);
+      return (
+        styles.getPropertyValue("--preview-pan-x").trim() !== "0px" &&
+        styles.getPropertyValue("--preview-pan-y").trim() !== "0px"
+      );
+    });
     const panState = await comparisonFrame.evaluate((node) => {
       const styles = getComputedStyle(node);
       return {
@@ -365,6 +407,27 @@ async function main() {
     assert(
       await page.locator(".review-background-button.black.active").count() === 1,
       "Dark preview background button should show active state."
+    );
+
+    await page.getByRole("button", { name: "Use edges review overlay" }).click();
+    await page.locator(".comparison-review-overlay.edge").waitFor({ state: "visible", timeout: 30000 });
+    const edgeOverlayInfo = await overlayInfo(page, ".comparison-review-overlay.edge");
+    assert(edgeOverlayInfo.width === QA_PREVIEW_MAX_DIMENSION, `Edge overlay width ${edgeOverlayInfo.width}`);
+    assert(edgeOverlayInfo.height === QA_PREVIEW_MAX_DIMENSION, `Edge overlay height ${edgeOverlayInfo.height}`);
+    assert(edgeOverlayInfo.alphaPixels > 0, "Edge overlay should contain visible pixels.");
+
+    await page.getByRole("button", { name: "Use mask review overlay" }).click();
+    await page.locator(".comparison-review-overlay.mask").waitFor({ state: "visible", timeout: 30000 });
+    const maskOverlayInfo = await overlayInfo(page, ".comparison-review-overlay.mask");
+    assert(maskOverlayInfo.width === QA_PREVIEW_MAX_DIMENSION, `Mask overlay width ${maskOverlayInfo.width}`);
+    assert(maskOverlayInfo.height === QA_PREVIEW_MAX_DIMENSION, `Mask overlay height ${maskOverlayInfo.height}`);
+    assert(maskOverlayInfo.alphaPixels > edgeOverlayInfo.alphaPixels, "Mask overlay should cover more pixels than edge overlay.");
+
+    await page.getByRole("button", { name: "Use none review overlay" }).click();
+    await page.locator(".comparison-review-overlay").waitFor({ state: "hidden", timeout: 10000 });
+    assert(
+      await page.locator(".comparison-review-overlay").count() === 0,
+      "Review overlay should be removed when None is selected."
     );
 
     const [selectedDownload] = await Promise.all([
@@ -523,6 +586,10 @@ async function main() {
     assert(
       await page.locator(".canvas-stage.checker").count() === 1,
       "Reset preferences should restore checker preview background."
+    );
+    assert(
+      await page.locator('.review-overlay-controls .comparison-quick-button.active', { hasText: "None" }).count() === 1,
+      "Reset preferences should restore the no-overlay review mode."
     );
 
     const relevantErrors = errors.filter((text) => !text.includes("favicon"));

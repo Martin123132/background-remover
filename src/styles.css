@@ -694,8 +694,21 @@ a {
 }
 
 .comparison-output,
-.comparison-original {
+.comparison-original,
+.comparison-review-overlay {
   grid-area: 1 / 1;
+}
+
+.comparison-review-overlay {
+  pointer-events: none;
+}
+
+.comparison-review-overlay.mask {
+  mix-blend-mode: multiply;
+}
+
+.comparison-review-overlay.edge {
+  filter: drop-shadow(0 0 2px rgba(38, 35, 31, 0.32));
 }
 
 .comparison-original-layer {
@@ -769,6 +782,10 @@ a {
   font-weight: 800;
 }
 
+.preview-rendering.overlay-rendering {
+  bottom: 50px;
+}
+
 .comparison-overlay {
   position: absolute;
   inset: 0;
@@ -797,6 +814,13 @@ a {
 }
 
 .comparison-quick-controls {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.review-overlay-controls {
   display: flex;
   grid-column: 1 / -1;
   flex-wrap: wrap;

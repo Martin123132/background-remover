@@ -13,7 +13,7 @@ The demo above is a real processed output generated from the repo-local fixture 
 - Removes image backgrounds in the browser.
 - Keeps source images local; there is no upload step.
 - Exports transparent PNGs with no watermark.
-- Reviews cutout edges with source/split/cutout modes, zoom-and-pan inspection, and quick backdrop toggles.
+- Reviews cutout edges with source/split/cutout modes, zoom-and-pan inspection, mask/edge overlays, and quick backdrop toggles.
 - Adds product-photo backgrounds, marketplace export presets, shadows, and ZIP export.
 - Exports completed batch items separately from pending or failed queue items.
 - Handles duplicate source filenames during ZIP export by appending `-2`, `-3`, etc. to output names so entries remain unique.
@@ -103,7 +103,7 @@ npm.cmd run qa:preview-export
 The command starts the local Vite app on `http://127.0.0.1:5175/` when one is not already running, uploads two fixture images, applies the marketplace export preset with a product-photo background and shadow, then verifies:
 
 - The live composed preview stays capped at `900x900` so slider changes do not repeatedly render full-size output.
-- Review controls update preview zoom/pan, fit/center reset, and dark/checker backdrop state without affecting export quality.
+- Review controls update preview zoom/pan, mask/edge overlays, fit/center reset, and dark/checker backdrop state without affecting export quality.
 - The selected PNG export and ZIP exports remain full preset quality at `2000x2000`.
 - Queue controls are locked while batch processing is running.
 

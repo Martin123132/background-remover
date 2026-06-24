@@ -47,10 +47,12 @@ import {
   exportScenes,
   getExportPreset,
   getExportScene,
+  renderExportReviewOverlay,
   renderExportPreset,
   type ExportComposition,
   type ExportPresetId,
   type ExportSceneId,
+  type ReviewOverlayMode,
 } from "./lib/exportPresets";
 import {
   batchZipFilename,
@@ -74,6 +76,7 @@ import {
 type JobStatus = "ready" | "processing" | "done" | "error";
 type PreviewBackground = "checker" | "white" | "black" | "brand" | "custom";
 type QueueFilter = "all" | JobStatus;
+type ReviewOverlaySelection = "none" | ReviewOverlayMode;
 
 type ImageJob = {
   id: string;
@@ -114,6 +117,12 @@ const previewBackgroundOptions: Array<{ id: PreviewBackground; label: string }> 
   { id: "white", label: "White" },
   { id: "black", label: "Dark" },
   { id: "brand", label: "Brand" },
+];
+
+const reviewOverlayOptions: Array<{ id: ReviewOverlaySelection; label: string }> = [
+  { id: "none", label: "None" },
+  { id: "mask", label: "Mask" },
+  { id: "edge", label: "Edges" },
 ];
 
 const DEFAULT_PREVIEW_PAN: PreviewPan = { x: 0, y: 0 };
@@ -575,6 +584,7 @@ function App() {
   const [comparePosition, setComparePosition] = useState(50);
   const [previewZoom, setPreviewZoom] = useState(QA_PREVIEW_ZOOM.default);
   const [previewPan, setPreviewPan] = useState<PreviewPan>(DEFAULT_PREVIEW_PAN);
+  const [reviewOverlay, setReviewOverlay] = useState<ReviewOverlaySelection>("none");
   const [isZipping, setIsZipping] = useState(false);
   const [isExportingSelected, setIsExportingSelected] = useState(false);
   const [exportLog, setExportLog] = useState<ExportLogItem[]>(() => readExportLogFromStorage());
@@ -599,9 +609,12 @@ function App() {
     persistedSettings.shadowOffset ?? DEFAULT_UI_SETTINGS.shadowOffset
   );
   const [composedPreviewUrl, setComposedPreviewUrl] = useState<string>();
+  const [reviewOverlayUrl, setReviewOverlayUrl] = useState<string>();
   const [isComposingPreview, setIsComposingPreview] = useState(false);
+  const [isRenderingReviewOverlay, setIsRenderingReviewOverlay] = useState(false);
   const jobsRef = useRef<ImageJob[]>([]);
   const composedPreviewUrlRef = useRef<string | undefined>(undefined);
+  const reviewOverlayUrlRef = useRef<string | undefined>(undefined);
   const comparisonFrameRef = useRef<HTMLDivElement>(null);
   const previewPanRef = useRef<PreviewPan>(DEFAULT_PREVIEW_PAN);
   const previewPanGestureRef = useRef<PreviewPanGesture | null>(null);
@@ -743,6 +756,10 @@ function App() {
   }, [composedPreviewUrl]);
 
   useEffect(() => {
+    reviewOverlayUrlRef.current = reviewOverlayUrl;
+  }, [reviewOverlayUrl]);
+
+  useEffect(() => {
     const timeout = window.setTimeout(() => {
       setDebouncedExportComposition(exportComposition);
     }, QA_PREVIEW_RENDER_DEBOUNCE_MS);
@@ -758,6 +775,9 @@ function App() {
       });
       if (composedPreviewUrlRef.current) {
         URL.revokeObjectURL(composedPreviewUrlRef.current);
+      }
+      if (reviewOverlayUrlRef.current) {
+        URL.revokeObjectURL(reviewOverlayUrlRef.current);
       }
     };
   }, []);
@@ -807,6 +827,51 @@ function App() {
     exportPreset,
     debouncedExportComposition,
   ]);
+
+  useEffect(() => {
+    if (!selectedJob?.outputBlob || reviewOverlay === "none") {
+      setReviewOverlayUrl((current) => {
+        revokeObjectUrlSoon(current);
+        return undefined;
+      });
+      setIsRenderingReviewOverlay(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsRenderingReviewOverlay(true);
+    setReviewOverlayUrl((current) => {
+      revokeObjectUrlSoon(current);
+      return undefined;
+    });
+
+    renderExportReviewOverlay(selectedJob.outputBlob, exportPreset, reviewOverlay, {
+      maxDimension: QA_PREVIEW_MAX_DIMENSION,
+    })
+      .then((blob) => {
+        if (cancelled) return;
+        const nextUrl = URL.createObjectURL(blob);
+        setReviewOverlayUrl((current) => {
+          revokeObjectUrlSoon(current);
+          return nextUrl;
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setReviewOverlayUrl((current) => {
+            revokeObjectUrlSoon(current);
+            return undefined;
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsRenderingReviewOverlay(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedJob?.id, selectedJob?.outputBlob, exportPreset, reviewOverlay]);
 
   const addFiles = (files: File[]) => {
     if (files.length === 0) return;
@@ -1144,6 +1209,7 @@ function App() {
     setShadowOffset(DEFAULT_UI_SETTINGS.shadowOffset);
     setComparePosition(50);
     setPreviewZoom(QA_PREVIEW_ZOOM.default);
+    setReviewOverlay("none");
     centerPreviewPan();
   };
 
@@ -1497,10 +1563,24 @@ function App() {
                           draggable="false"
                           alt=""
                         />
+                        {reviewOverlayUrl ? (
+                          <img
+                            className={`comparison-image comparison-review-overlay ${reviewOverlay}`}
+                            src={reviewOverlayUrl}
+                            draggable="false"
+                            alt=""
+                          />
+                        ) : null}
                         {isComposingPreview ? (
                           <div className="preview-rendering">
                             <Loader2 className="spin" size={16} />
                             Updating preview
+                          </div>
+                        ) : null}
+                        {isRenderingReviewOverlay ? (
+                          <div className="preview-rendering overlay-rendering">
+                            <Loader2 className="spin" size={16} />
+                            Updating overlay
                           </div>
                         ) : null}
                         <div className="comparison-original-layer">
@@ -1589,6 +1669,21 @@ function App() {
                       >
                         Cutout
                       </button>
+                    </span>
+                    <span className="review-overlay-controls" role="group" aria-label="Review overlay">
+                      {reviewOverlayOptions.map((option) => (
+                        <button
+                          className={`comparison-quick-button ${reviewOverlay === option.id ? "active" : ""}`}
+                          key={option.id}
+                          type="button"
+                          title={`${option.label} review overlay`}
+                          aria-label={`Use ${option.label.toLowerCase()} review overlay`}
+                          disabled={selectedJob.status !== "done"}
+                          onClick={() => setReviewOverlay(option.id)}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
                     </span>
                     <div className="review-zoom-controls" role="group" aria-label="Preview zoom controls">
                       <ZoomOut size={16} />

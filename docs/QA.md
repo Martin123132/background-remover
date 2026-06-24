@@ -25,7 +25,7 @@ Checks performed:
 - Runs background removal.
 - Applies the marketplace preset + warm sweep scene + shadow controls.
 - Verifies live preview compositing remains capped at `900x900`.
-- Verifies edge-review controls update preview zoom, drag-pan the preview, reset pan/zoom, and switch to the dark preview backdrop.
+- Verifies edge-review controls update preview zoom, drag-pan the preview, render mask/edge overlays, reset pan/zoom, and switch to the dark preview backdrop.
 - Verifies selected export PNG is `2000x2000`.
 - Verifies batch-processing lock controls (topbar and queue tools) are disabled while processing.
 - Verifies ZIP export filename is `background-remover-marketplace-2000-warm-2-images.zip` (preset + scene + count).
