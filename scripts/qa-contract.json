@@ -37,6 +37,12 @@
   },
   "preview": {
     "maxDimension": 900,
-    "renderDebounceMs": 180
+    "renderDebounceMs": 180,
+    "zoom": {
+      "default": 100,
+      "min": 75,
+      "max": 180,
+      "step": 5
+    }
   }
 }

@@ -6,6 +6,7 @@ import JSZip from "jszip";
 import { chromium } from "playwright-core";
 import {
   QA_PREVIEW_MAX_DIMENSION,
+  QA_PREVIEW_ZOOM,
   QA_QUERY_PARAM_KEY,
   QA_QUERY_PARAM_VALUE,
   QA_SHADOW_SLIDERS,
@@ -304,6 +305,40 @@ async function main() {
     assert(previewInfo.height === QA_PREVIEW_MAX_DIMENSION, `Preview height ${previewInfo.height}`);
     assert(previewInfo.corner[3] === 255, "Preview scene corner should be opaque.");
 
+    const zoomInput = page.locator('input[aria-label="Preview zoom"]');
+    assert(await zoomInput.count() === 1, "Expected preview zoom control.");
+    const reviewZoom = Math.min(QA_PREVIEW_ZOOM.max, Math.max(QA_PREVIEW_ZOOM.min, 150));
+    await zoomInput.fill(String(reviewZoom));
+    assert((await zoomInput.inputValue()) === String(reviewZoom), "Preview zoom input should update.");
+    const zoomState = await page.locator(".comparison-frame").evaluate((node) => {
+      const element = node;
+      return {
+        cssVariable: getComputedStyle(element).getPropertyValue("--preview-zoom").trim(),
+        outputTransform: getComputedStyle(element.querySelector(".comparison-output")).transform,
+      };
+    });
+    assert(
+      zoomState.cssVariable === String(reviewZoom / 100),
+      `Unexpected preview zoom CSS value: ${zoomState.cssVariable}`
+    );
+    assert(zoomState.outputTransform !== "none", "Preview image should be transformed after zoom.");
+
+    await page.getByRole("button", { name: "Fit preview" }).click();
+    assert(
+      (await zoomInput.inputValue()) === String(QA_PREVIEW_ZOOM.default),
+      "Fit preview should reset zoom to default."
+    );
+
+    await page.getByRole("button", { name: "Use dark preview background" }).click();
+    assert(
+      await page.locator(".canvas-stage.black").count() === 1,
+      "Quick background control should switch preview stage to dark."
+    );
+    assert(
+      await page.locator(".review-background-button.black.active").count() === 1,
+      "Dark preview background button should show active state."
+    );
+
     const [selectedDownload] = await Promise.all([
       page.waitForEvent("download", { timeout: 30000 }),
       page.locator(".preview-toolbar .secondary-button").click(),
@@ -453,6 +488,14 @@ async function main() {
     assert((await thirdSlider.inputValue()) === String(defaults.shadowOffset), "Shadow offset should reset to default.");
     assert(!shadowChecked, "Reset preferences should disable and clear product shadow.");
     assert(shadowDisabled, "Shadow control should be disabled for transparent scene after reset.");
+    assert(
+      (await page.locator('input[aria-label="Preview zoom"]').inputValue()) === String(QA_PREVIEW_ZOOM.default),
+      "Reset preferences should restore preview zoom."
+    );
+    assert(
+      await page.locator(".canvas-stage.checker").count() === 1,
+      "Reset preferences should restore checker preview background."
+    );
 
     const relevantErrors = errors.filter((text) => !text.includes("favicon"));
     assert(relevantErrors.length === 0, `Console errors: ${relevantErrors.join(" | ")}`);

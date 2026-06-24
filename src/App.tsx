@@ -11,6 +11,7 @@ import {
   FileText,
   Loader2,
   Lock,
+  Maximize2,
   Package,
   Palette,
   RefreshCw,
@@ -21,6 +22,8 @@ import {
   Trash2,
   X,
   Zap,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { Dropzone } from "./components/Dropzone";
@@ -52,6 +55,7 @@ import {
 import {
   QA_PREVIEW_MAX_DIMENSION,
   QA_PREVIEW_RENDER_DEBOUNCE_MS,
+  QA_PREVIEW_ZOOM,
   QA_QUERY_PARAM_KEY,
   QA_QUERY_PARAM_VALUE,
   QA_SETTINGS_STORAGE_KEY,
@@ -96,6 +100,13 @@ const modeLabels: Record<RemovalMode, { label: string; detail: string }> = {
     detail: "Export the alpha mask for advanced editing.",
   },
 };
+
+const previewBackgroundOptions: Array<{ id: PreviewBackground; label: string }> = [
+  { id: "checker", label: "Checker" },
+  { id: "white", label: "White" },
+  { id: "black", label: "Dark" },
+  { id: "brand", label: "Brand" },
+];
 
 const DEFAULT_UI_SETTINGS: Required<StoredUISettings> = {
   ...QA_UI_DEFAULTS,
@@ -520,6 +531,7 @@ function App() {
     persistedSettings.customBackground ?? DEFAULT_UI_SETTINGS.customBackground
   );
   const [comparePosition, setComparePosition] = useState(50);
+  const [previewZoom, setPreviewZoom] = useState(QA_PREVIEW_ZOOM.default);
   const [isZipping, setIsZipping] = useState(false);
   const [isExportingSelected, setIsExportingSelected] = useState(false);
   const [exportLog, setExportLog] = useState<ExportLogItem[]>(() => readExportLogFromStorage());
@@ -1013,6 +1025,8 @@ function App() {
     setShadowIntensity(DEFAULT_UI_SETTINGS.shadowIntensity);
     setShadowBlur(DEFAULT_UI_SETTINGS.shadowBlur);
     setShadowOffset(DEFAULT_UI_SETTINGS.shadowOffset);
+    setComparePosition(50);
+    setPreviewZoom(QA_PREVIEW_ZOOM.default);
   };
 
   return (
@@ -1343,7 +1357,12 @@ function App() {
                 <div className="comparison-shell">
                   <div
                     className="comparison-frame"
-                    style={{ "--split": `${comparePosition}%` } as CSSProperties}
+                    style={
+                      {
+                        "--split": `${comparePosition}%`,
+                        "--preview-zoom": String(previewZoom / 100),
+                      } as CSSProperties
+                    }
                   >
                     {selectedJob.status === "done" && selectedJob.outputUrl ? (
                       <>
@@ -1442,6 +1461,43 @@ function App() {
                       >
                         Cutout
                       </button>
+                    </span>
+                    <div className="review-zoom-controls" role="group" aria-label="Preview zoom controls">
+                      <ZoomOut size={16} />
+                      <input
+                        type="range"
+                        min={QA_PREVIEW_ZOOM.min}
+                        max={QA_PREVIEW_ZOOM.max}
+                        step={QA_PREVIEW_ZOOM.step}
+                        value={previewZoom}
+                        disabled={selectedJob.status !== "done"}
+                        onChange={(event) => setPreviewZoom(Number(event.target.value))}
+                        aria-label="Preview zoom"
+                      />
+                      <ZoomIn size={16} />
+                      <button
+                        className="comparison-quick-button"
+                        type="button"
+                        title="Fit preview"
+                        aria-label="Fit preview"
+                        disabled={selectedJob.status !== "done"}
+                        onClick={() => setPreviewZoom(QA_PREVIEW_ZOOM.default)}
+                      >
+                        <Maximize2 size={14} />
+                        Fit
+                      </button>
+                    </div>
+                    <span className="review-background-controls" role="group" aria-label="Preview background presets">
+                      {previewBackgroundOptions.map((option) => (
+                        <button
+                          className={`review-background-button ${option.id} ${background === option.id ? "active" : ""}`}
+                          key={option.id}
+                          type="button"
+                          title={`${option.label} preview background`}
+                          aria-label={`Use ${option.label.toLowerCase()} preview background`}
+                          onClick={() => setBackground(option.id)}
+                        />
+                      ))}
                     </span>
                   </div>
 

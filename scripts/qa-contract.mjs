@@ -14,3 +14,4 @@ export const QA_UI_DEFAULTS = contract.ui.defaults;
 export const QA_SHADOW_SLIDERS = contract.ui.sliders;
 export const QA_PREVIEW_MAX_DIMENSION = contract.preview.maxDimension;
 export const QA_PREVIEW_RENDER_DEBOUNCE_MS = contract.preview.renderDebounceMs;
+export const QA_PREVIEW_ZOOM = contract.preview.zoom;

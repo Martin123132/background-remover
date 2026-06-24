@@ -4,6 +4,7 @@ type SliderValue = {
   min: number;
   max: number;
   default: number;
+  step?: number;
 };
 
 export interface QAContract {
@@ -34,6 +35,7 @@ export interface QAContract {
   preview: {
     maxDimension: number;
     renderDebounceMs: number;
+    zoom: SliderValue;
   };
 }
 
@@ -45,4 +47,5 @@ export const QA_SETTINGS_STORAGE_KEY = QA_CONTRACT.ui.settingsStorageKey;
 export const QA_UI_DEFAULTS = QA_CONTRACT.ui.defaults;
 export const QA_PREVIEW_MAX_DIMENSION = QA_CONTRACT.preview.maxDimension;
 export const QA_PREVIEW_RENDER_DEBOUNCE_MS = QA_CONTRACT.preview.renderDebounceMs;
+export const QA_PREVIEW_ZOOM = QA_CONTRACT.preview.zoom;
 export const QA_SHADOW_SLIDERS = QA_CONTRACT.ui.sliders;
