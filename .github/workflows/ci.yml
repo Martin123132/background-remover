@@ -30,3 +30,9 @@ jobs:
 
       - name: Run checks
         run: npm run check
+
+      - name: Run GitHub Pages build
+        run: npm run build:github-pages
+
+      - name: Check documentation assets
+        run: npm run check:docs-assets

@@ -67,11 +67,19 @@ Generate the public preset gallery with:
 npm.cmd run capture:preset-gallery
 ```
 
+Verify committed public demo and preset captures still exist with their expected dimensions:
+
+```powershell
+npm.cmd run check:docs-assets
+```
+
 Artifacts go to:
 
 - `D:\open-source\background-remover\docs\assets\background-remover-demo.png`
 - `D:\open-source\background-remover\docs\assets\preset-transparent-png.png`
 - `D:\open-source\background-remover\docs\assets\preset-marketplace-square.png`
+- `D:\open-source\background-remover\docs\assets\preset-listing-square.png`
+- `D:\open-source\background-remover\docs\assets\preset-storefront-card.png`
 - `D:\open-source\background-remover\docs\assets\preset-social-avatar.png`
 - `D:\open-source\background-remover\docs\assets\preset-video-thumbnail.png`
 

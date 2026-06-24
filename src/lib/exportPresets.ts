@@ -1,4 +1,10 @@
-export type ExportPresetId = "transparent" | "marketplace" | "avatar" | "thumbnail";
+export type ExportPresetId =
+  | "transparent"
+  | "marketplace"
+  | "listing"
+  | "storefront"
+  | "avatar"
+  | "thumbnail";
 export type ExportSceneId = "transparent" | "white" | "warm" | "cool" | "graphite";
 
 export type ExportPreset = {
@@ -49,6 +55,26 @@ export const exportPresets: ExportPreset[] = [
     height: 2000,
     background: "#ffffff",
     paddingRatio: 0.1,
+  },
+  {
+    id: "listing",
+    label: "Listing square",
+    detail: "2400 x 2400 white canvas for high-resolution listings.",
+    suffix: "listing-square-2400",
+    width: 2400,
+    height: 2400,
+    background: "#ffffff",
+    paddingRatio: 0.08,
+  },
+  {
+    id: "storefront",
+    label: "Storefront card",
+    detail: "1600 x 1200 neutral canvas for shop cards and banners.",
+    suffix: "storefront-card-1600x1200",
+    width: 1600,
+    height: 1200,
+    background: "#f8fafc",
+    paddingRatio: 0.08,
   },
   {
     id: "avatar",

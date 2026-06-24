@@ -26,6 +26,15 @@ The demo above is a real processed output generated from the repo-local fixture 
 More on presets and composition scenes is in [Export presets and scenes](docs/EXPORT_PRESETS.md).
 Static hosting notes are in [Static deployment](docs/DEPLOYMENT.md).
 
+## What it replaces
+
+Background Remover is built for common paid-tool workflows that should not need credits or hosted uploads for personal and non-commercial use:
+
+- Credit-based background removal tools.
+- Watermarked free exports.
+- Hosted-only batch background removal.
+- Manual product-photo canvas, shadow, and ZIP-export cleanup.
+
 ## Queue workflow
 
 - Add multiple files to the queue at once with the dropzone.
@@ -79,6 +88,7 @@ npm.cmd run lint
 npm.cmd run build
 npm.cmd run build:github-pages
 npm.cmd run check
+npm.cmd run check:docs-assets
 npm.cmd run qa
 npm.cmd run capture:demo
 npm.cmd run capture:preset-gallery
@@ -88,6 +98,8 @@ npm.cmd run clean:qa-artifacts
 `npm.cmd run check` runs lint followed by the production build. There is no separate unit-test suite yet; the browser regression check below is the current end-to-end QA path documented in [QA.md](docs/QA.md).
 
 `npm.cmd run build:github-pages` builds the static app with `/background-remover/` as the Vite base path for GitHub Pages-style hosting.
+
+`npm.cmd run check:docs-assets` verifies the public README and preset-gallery captures exist and still have their expected dimensions.
 
 ## Storage rule
 
@@ -166,6 +178,8 @@ The preset gallery in [Export presets and scenes](docs/EXPORT_PRESETS.md) is gen
 
 - Transparent PNG for downstream editors.
 - Marketplace square for catalogue/product-card uploads.
+- Listing square for high-resolution product listings.
+- Storefront card for shop cards and catalogue banners.
 - Social avatar for profile images.
 - Video thumbnail for creator cards.
 
@@ -189,4 +203,4 @@ See `ROADMAP.md` for planned work and `CHANGELOG.md` for release history.
 
 PolyForm Noncommercial 1.0.0. See `LICENSE`, `NOTICE.md`, and `COMMERCIAL-LICENSE.md`.
 
-Personal, hobby, research, educational, public-interest, and other non-commercial uses are permitted. Commercial use requires a separate written license from TWO HANDS NETWORK LTD.
+Personal, hobby, research, educational, public-interest, and other non-commercial uses are permitted. Commercial use requires a separate written license from TWO HANDS NETWORK LTD. Commercial licensing discussions should be directed to the COO of TWO HANDS NETWORK LTD through the company's official contact channel.

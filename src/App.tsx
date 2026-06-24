@@ -234,7 +234,14 @@ function isPreviewBackground(value: unknown): value is PreviewBackground {
 }
 
 function isExportPresetId(value: unknown): value is ExportPresetId {
-  return value === "transparent" || value === "marketplace" || value === "avatar" || value === "thumbnail";
+  return (
+    value === "transparent" ||
+    value === "marketplace" ||
+    value === "listing" ||
+    value === "storefront" ||
+    value === "avatar" ||
+    value === "thumbnail"
+  );
 }
 
 function isExportSceneId(value: unknown): value is ExportSceneId {
@@ -1231,12 +1238,12 @@ function App() {
           </span>
           <span>
             <strong>Background Remover</strong>
-            <small>local, open, no credits</small>
+            <small>local, source-available, no credits</small>
           </span>
         </div>
         <nav className="topbar-actions" aria-label="Primary actions">
-          <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noreferrer">
-            AGPL license
+          <a href="https://polyformproject.org/licenses/noncommercial/1.0.0/" target="_blank" rel="noreferrer">
+            Non-commercial license
           </a>
           <button className="ghost-button" onClick={resetPreferences} type="button">
             <RefreshCw size={17} />

@@ -13,12 +13,12 @@ This roadmap favors local-first workflows that can replace credit-based backgrou
 ## Next
 
 - Add optional hosted demo once GitHub Pages is enabled in repository settings.
-- Add more marketplace and creator presets based on real repeated workflows.
+- Add more marketplace and creator preset packs based on real repeated workflows.
 
 ## Later
 
 - Add optional local desktop packaging.
-- Add more marketplace presets.
+- Add platform-specific preset packs once the generic presets are stable.
 - Add mask-editing affordances for edge cleanup.
 - Add performance profiling for very large images and long queues.
 

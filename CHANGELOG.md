@@ -24,6 +24,9 @@ All notable changes to this project will be documented here.
 - Add a repeatable preset-gallery capture command.
 - Add optional GitHub Pages static build script and deployment notes.
 - Make model asset paths follow the Vite base path by default for subpath hosting.
+- Clarify non-commercial licensing docs and commercial-license contact route.
+- Add listing square and storefront card export presets with reproducible public captures.
+- Add documentation asset dimension checks to local scripts and CI.
 
 ## 0.1.0 - 2026-06-22
 

@@ -32,3 +32,7 @@ The project should stay:
 - Free from credit-based hosted processing.
 - Reproducible with public source and public-compatible assets.
 - Consistent with the PolyForm Noncommercial public license and commercial-use notice.
+
+## Commercial licensing
+
+Commercial use requires a separate written license from TWO HANDS NETWORK LTD. Licensing discussions should be directed to the COO of TWO HANDS NETWORK LTD through the company's official contact channel.

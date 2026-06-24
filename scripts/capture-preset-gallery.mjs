@@ -38,6 +38,24 @@ const captures = [
     shadow: true,
   },
   {
+    file: "preset-listing-square.png",
+    preset: "Listing square",
+    scene: "Studio white",
+    shadow: true,
+    shadowStrength: 45,
+    shadowBlur: 30,
+    shadowOffset: 20,
+  },
+  {
+    file: "preset-storefront-card.png",
+    preset: "Storefront card",
+    scene: "Cool grey",
+    shadow: true,
+    shadowStrength: 50,
+    shadowBlur: 34,
+    shadowOffset: 24,
+  },
+  {
     file: "preset-social-avatar.png",
     preset: "Social avatar",
     scene: "Cool grey",
@@ -85,21 +103,26 @@ async function chooseCard(page, selector, label) {
   await chosen.first().click();
 }
 
-async function waitForPreview(page) {
+async function waitForPreview(page, previousSrc) {
   await page.locator(".comparison-output").waitFor({ state: "visible", timeout: 120000 });
-  await page.waitForFunction(() => {
+  await page.waitForFunction((oldSrc) => {
     const img = document.querySelector(".comparison-output");
     const rendering = document.querySelector(".preview-rendering");
     return (
       img instanceof HTMLImageElement &&
       img.complete &&
       img.naturalWidth > 0 &&
-      !rendering
+      !rendering &&
+      (!oldSrc || img.currentSrc !== oldSrc)
     );
-  });
+  }, previousSrc ?? null);
 }
 
 async function applyCaptureState(page, capture) {
+  const previousSrc = await page.locator(".comparison-output").evaluate((node) => {
+    return node instanceof HTMLImageElement ? node.currentSrc : "";
+  }).catch(() => "");
+
   await chooseCard(page, ".preset-card", capture.preset);
   await chooseCard(page, ".scene-card", capture.scene);
 
@@ -140,7 +163,8 @@ async function applyCaptureState(page, capture) {
     await shadowToggle.uncheck();
   }
 
-  await waitForPreview(page);
+  const expectsNewPreview = capture.preset !== "Transparent PNG" || capture.scene !== "Cutout";
+  await waitForPreview(page, expectsNewPreview ? previousSrc : null);
 }
 
 async function main() {

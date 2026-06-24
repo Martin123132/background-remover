@@ -1,6 +1,6 @@
 # Export Presets and Scenes
 
-Background Remover ships with four export presets and five composition scenes so one workspace covers both cutout editing and ready-to-upload storefront outputs.
+Background Remover ships with six export presets and five composition scenes so one workspace covers both cutout editing and ready-to-upload storefront outputs.
 
 ## Export presets
 
@@ -8,6 +8,8 @@ Background Remover ships with four export presets and five composition scenes so
 | --- | --- | --- | --- |
 | Transparent PNG | Source size | Raw cutout for compositing in other design tools | `cutout` |
 | Marketplace square | 2000 x 2000 | Product cards, marketplaces, and print-like catalogues | `marketplace-2000` |
+| Listing square | 2400 x 2400 | High-resolution product listings and zoom-friendly shop images | `listing-square-2400` |
+| Storefront card | 1600 x 1200 | Shop cards, catalogue banners, and storefront tiles | `storefront-card-1600x1200` |
 | Social avatar | 1080 x 1080 | Profile and social media images | `avatar-1080` |
 | Video thumbnail | 1280 x 720 | Channel thumbnails and social video cards | `thumbnail-1280x720` |
 
@@ -19,6 +21,8 @@ These captures use the repo-local `test-fixtures/safe-product-mug.png` fixture. 
 | --- | --- | --- |
 | Transparent PNG | ![Transparent PNG preset](assets/preset-transparent-png.png) | Best when the next step is another editor or design tool. |
 | Marketplace square | ![Marketplace square preset](assets/preset-marketplace-square.png) | Uses a square product canvas for storefront uploads. |
+| Listing square | ![Listing square preset](assets/preset-listing-square.png) | Keeps a larger white square for high-resolution product listings. |
+| Storefront card | ![Storefront card preset](assets/preset-storefront-card.png) | Uses a 4:3 neutral canvas for shop cards and catalogue banners. |
 | Social avatar | ![Social avatar preset](assets/preset-social-avatar.png) | Keeps a profile-friendly square crop with a soft backdrop. |
 | Video thumbnail | ![Video thumbnail preset](assets/preset-video-thumbnail.png) | Uses a wide canvas suited to thumbnail layouts. |
 

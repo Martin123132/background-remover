@@ -20,3 +20,4 @@ Good reports include:
 - Source images should stay local to the browser session.
 - Development caches, temporary files, and QA artifacts should remain under the D-drive project paths documented in the README.
 - Commercial use should follow `COMMERCIAL-LICENSE.md`; public non-commercial use should preserve the required notices in `LICENSE` and `NOTICE.md`.
+- Commercial licensing discussions should be directed to the COO of TWO HANDS NETWORK LTD through the company's official contact channel.
