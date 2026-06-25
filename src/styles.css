@@ -105,6 +105,23 @@ a {
   margin: 0 auto;
 }
 
+.app-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  justify-content: space-between;
+  max-width: 1480px;
+  margin: 14px auto 0;
+  color: #625c56;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.app-footer a {
+  color: #1e6d70;
+  font-weight: 750;
+}
+
 .control-panel,
 .queue-panel,
 .preview-area {
@@ -1397,6 +1414,10 @@ a {
 
   .workspace {
     grid-template-columns: 1fr;
+  }
+
+  .app-footer {
+    flex-direction: column;
   }
 
   .intro h1 {

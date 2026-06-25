@@ -17,7 +17,7 @@ D:\open-source\background-remover\dist\
 
 ## GitHub Pages build
 
-For the repository path `https://<user>.github.io/background-remover/`, build with:
+For the repository path `https://martin123132.github.io/background-remover/`, build with:
 
 ```powershell
 npm.cmd run build:github-pages
@@ -34,6 +34,15 @@ The background-removal model path follows Vite's base path by default, so static
 ```text
 /background-remover/models/background-removal/
 ```
+
+## GitHub Pages deployment
+
+The repository includes `.github/workflows/pages.yml`, which deploys the static app from GitHub Actions when `master` changes or when the workflow is run manually. It:
+
+- installs dependencies with `npm ci`;
+- runs `npm run build:github-pages`;
+- uploads `dist/` as a Pages artifact;
+- deploys through GitHub Pages in workflow mode.
 
 ## Custom static host path
 
@@ -56,4 +65,4 @@ npm.cmd run build -- --base=/your-path/
 - Do not commit downloaded model blobs under `public/models/background-removal/`.
 - Keep static hosting consistent with the PolyForm Noncommercial public license and required notices.
 - Direct commercial licensing, collaboration, information on existing products, and other enquiries to Glyn via email at glyn@twohandsnetwork.co.uk.
-- GitHub Pages must be enabled in the repository settings before the static build is publicly served.
+- GitHub Pages must be set to GitHub Actions/workflow mode before the static build is publicly served.

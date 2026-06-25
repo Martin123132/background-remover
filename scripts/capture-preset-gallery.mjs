@@ -15,7 +15,7 @@ const projectRoot = path.resolve(__dirname, "..");
 const browserExecutablePath = process.env.BROWSER_EXECUTABLE_PATH;
 const inputImage =
   process.env.BACKGROUND_REMOVER_TEST_IMAGE ||
-  path.join(projectRoot, "test-fixtures", "safe-product-mug.png");
+  path.join(projectRoot, "test-fixtures", "safe-studio-product.png");
 const outputDir = path.join(projectRoot, "docs", "assets");
 const rawUrl = process.env.BACKGROUND_REMOVER_QA_URL || "http://127.0.0.1:5175/";
 const demoUrl = (() => {

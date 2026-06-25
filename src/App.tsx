@@ -2029,6 +2029,13 @@ function App() {
           </div>
         </aside>
       </section>
+
+      <footer className="app-footer" aria-label="License and contact">
+        <span>Personal and non-commercial use under PolyForm Noncommercial 1.0.0.</span>
+        <a href="mailto:glyn@twohandsnetwork.co.uk">
+          Commercial licensing and enquiries: glyn@twohandsnetwork.co.uk
+        </a>
+      </footer>
     </main>
   );
 }

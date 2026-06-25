@@ -7,6 +7,7 @@
   "scripts": {
     "bootstrap": "powershell -ExecutionPolicy Bypass -File ./scripts/bootstrap.ps1",
     "fetch:model-assets": "powershell -ExecutionPolicy Bypass -File ./scripts/fetch-model-assets.ps1",
+    "fixtures:generate": "node ./scripts/generate-safe-fixtures.mjs",
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "build:github-pages": "tsc --noEmit && vite build --base=/background-remover/",

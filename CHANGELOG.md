@@ -27,6 +27,9 @@ All notable changes to this project will be documented here.
 - Clarify non-commercial licensing docs and commercial-license contact route.
 - Add listing square and storefront card export presets with reproducible public captures.
 - Add documentation asset dimension checks to local scripts and CI.
+- Add GitHub Pages deployment workflow and live-demo documentation.
+- Add a generated safe studio fixture for clearer public demo and preset captures.
+- Add a public release checklist for Pages, licensing, QA, and artifact checks.
 
 ## 0.1.0 - 2026-06-22
 

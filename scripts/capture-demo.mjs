@@ -15,7 +15,7 @@ const projectRoot = path.resolve(__dirname, "..");
 const browserExecutablePath = process.env.BROWSER_EXECUTABLE_PATH;
 const inputImage =
   process.env.BACKGROUND_REMOVER_TEST_IMAGE ||
-  path.join(projectRoot, "test-fixtures", "safe-product-mug.png");
+  path.join(projectRoot, "test-fixtures", "safe-studio-product.png");
 const screenshotPath =
   process.env.BACKGROUND_REMOVER_DEMO_SCREENSHOT ||
   path.join(projectRoot, "docs", "assets", "background-remover-demo.png");

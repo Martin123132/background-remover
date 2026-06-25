@@ -15,7 +15,7 @@ Background Remover ships with six export presets and five composition scenes so 
 
 ## Preset examples
 
-These captures use the repo-local `test-fixtures/safe-product-mug.png` fixture. They are safe to publish and are not private customer images.
+These captures use the generated repo-local `test-fixtures/safe-studio-product.png` fixture. They are safe to publish and are not private customer images.
 
 | Preset | Example capture | Notes |
 | --- | --- | --- |

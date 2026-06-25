@@ -55,6 +55,12 @@ Server logs for QA-run launched dev servers are written to:
 
 ## Demo capture
 
+Regenerate the safe public fixture with:
+
+```powershell
+npm.cmd run fixtures:generate
+```
+
 Generate the public README screenshot with:
 
 ```powershell
@@ -75,6 +81,7 @@ npm.cmd run check:docs-assets
 
 Artifacts go to:
 
+- `D:\open-source\background-remover\test-fixtures\safe-studio-product.png`
 - `D:\open-source\background-remover\docs\assets\background-remover-demo.png`
 - `D:\open-source\background-remover\docs\assets\preset-transparent-png.png`
 - `D:\open-source\background-remover\docs\assets\preset-marketplace-square.png`
@@ -96,6 +103,8 @@ Useful for custom fixtures/scenes or browser setup:
 - `BACKGROUND_REMOVER_DEMO_SHADOW_STRENGTH`
 - `BACKGROUND_REMOVER_DEMO_SHADOW_BLUR`
 - `BACKGROUND_REMOVER_DEMO_SHADOW_OFFSET`
+
+By default, public demo captures use `test-fixtures/safe-studio-product.png`. The preview/export regression check continues to use `test-fixtures/safe-product-mug.png` unless `BACKGROUND_REMOVER_TEST_IMAGE` overrides it.
 
 For static hosting checks, `npm.cmd run build:github-pages` verifies the GitHub Pages base-path build.
 

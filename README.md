@@ -4,9 +4,11 @@
 
 A local-first, source-available background remover for personal and non-commercial product, creator, and marketplace workflows.
 
+[Live demo](https://martin123132.github.io/background-remover/) | [Export presets and scenes](docs/EXPORT_PRESETS.md) | [Commercial licensing](COMMERCIAL-LICENSE.md)
+
 ![Background Remover demo](docs/assets/background-remover-demo.png)
 
-The demo above is a real processed output generated from the repo-local fixture at `test-fixtures/safe-product-mug.png`, with marketplace composition and product shadow enabled. No private images are used.
+The demo above is a real processed output generated from the repo-local fixture at `test-fixtures/safe-studio-product.png`, with marketplace composition and product shadow enabled. No private images are used.
 
 ## What it does
 
@@ -84,6 +86,7 @@ After bootstrap, these package scripts are available:
 
 ```powershell
 npm.cmd run dev
+npm.cmd run fixtures:generate
 npm.cmd run lint
 npm.cmd run build
 npm.cmd run build:github-pages
@@ -97,9 +100,11 @@ npm.cmd run clean:qa-artifacts
 
 `npm.cmd run check` runs lint followed by the production build. There is no separate unit-test suite yet; the browser regression check below is the current end-to-end QA path documented in [QA.md](docs/QA.md).
 
+`npm.cmd run fixtures:generate` regenerates the safe public demo fixture at `test-fixtures/safe-studio-product.png`.
+
 `npm.cmd run build:github-pages` builds the static app with `/background-remover/` as the Vite base path for GitHub Pages-style hosting.
 
-`npm.cmd run check:docs-assets` verifies the public README and preset-gallery captures exist and still have their expected dimensions.
+`npm.cmd run check:docs-assets` verifies the public fixture, README capture, and preset-gallery captures exist and still have their expected dimensions.
 
 ## Storage rule
 
@@ -152,12 +157,14 @@ npm.cmd run clean:qa-artifacts
 Regenerate the README screenshot with:
 
 ```powershell
+npm.cmd run fixtures:generate
 npm.cmd run capture:demo
 ```
 
 Regenerate the preset gallery with:
 
 ```powershell
+npm.cmd run fixtures:generate
 npm.cmd run capture:preset-gallery
 ```
 
@@ -190,6 +197,7 @@ src/                              React app and image workflow
 src/lib/                          Background removal, file, and export helpers
 scripts/                          D-drive-safe setup, dev, model, and QA scripts
 public/models/background-removal/ Downloaded model and WASM assets, ignored except .gitkeep
+test-fixtures/                    Safe generated and hand-curated local fixtures
 docs/assets/                      Safe public screenshots and preset captures
 ```
 
@@ -198,6 +206,7 @@ docs/assets/                      Safe public screenshots and preset captures
 See `CONTRIBUTING.md` for setup, QA, and pull request guidance. See `SUPPORT.md` for useful issue reports. See `SECURITY.md` for vulnerability reporting and the project security goals.
 
 See `ROADMAP.md` for planned work and `CHANGELOG.md` for release history.
+See `docs/RELEASE_CHECKLIST.md` before tagging or publishing a release.
 
 ## License
 

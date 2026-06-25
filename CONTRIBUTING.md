@@ -36,7 +36,7 @@ npm.cmd run clean:qa-artifacts
 
 - Keep source images local; do not add upload-based workflows.
 - Keep generated files, caches, screenshots, model blobs, and temporary exports out of Git.
-- Public demo screenshots should use repo-safe fixtures such as `test-fixtures/safe-product-mug.png`.
+- Public demo screenshots should use repo-safe fixtures such as `test-fixtures/safe-studio-product.png` or `test-fixtures/safe-product-mug.png`.
 - Preserve the PolyForm Noncommercial source-available license posture.
 - Keep commercial-use wording pointed to TWO HANDS NETWORK LTD and the public Glyn contact email.
 - Prefer small pull requests with one clear product or maintenance improvement.
