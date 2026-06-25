@@ -35,6 +35,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Fetch model assets
+        run: |
+          mkdir -p .cache/models .tmp/background-removal-data public/models/background-removal
+          curl -L "https://staticimgly.com/@imgly/background-removal-data/1.7.0/package.tgz" -o ".cache/models/background-removal-data-1.7.0.tgz"
+          tar -xzf ".cache/models/background-removal-data-1.7.0.tgz" -C ".tmp/background-removal-data"
+          cp -R .tmp/background-removal-data/package/dist/* public/models/background-removal/
+
       - name: Build static app
         run: npm run build:github-pages
 

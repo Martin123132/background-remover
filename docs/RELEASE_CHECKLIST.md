@@ -18,6 +18,7 @@ Use this before tagging, publishing a GitHub release, or announcing a public dem
 - Preset gallery images are regenerated from repo-safe fixtures.
 - GitHub Pages deployment workflow passes.
 - Live demo opens at `https://martin123132.github.io/background-remover/`.
+- Live demo can fetch model assets under `/background-remover/models/background-removal/`.
 - App footer, README, `LICENSE`, `NOTICE.md`, and `COMMERCIAL-LICENSE.md` keep the PolyForm Noncommercial posture.
 - Commercial licensing and enquiries point to Glyn at `glyn@twohandsnetwork.co.uk`.
 

@@ -40,6 +40,7 @@ The background-removal model path follows Vite's base path by default, so static
 The repository includes `.github/workflows/pages.yml`, which deploys the static app from GitHub Actions when `master` changes or when the workflow is run manually. It:
 
 - installs dependencies with `npm ci`;
+- downloads `@imgly/background-removal-data` into `public/models/background-removal/`;
 - runs `npm run build:github-pages`;
 - uploads `dist/` as a Pages artifact;
 - deploys through GitHub Pages in workflow mode.
