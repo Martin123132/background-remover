@@ -16,4 +16,4 @@
 - [ ] Generated files, caches, screenshots, model blobs, and temporary exports are not committed
 - [ ] D-drive storage rules are preserved for local scripts and artifacts
 - [ ] PolyForm Noncommercial source-available posture is preserved
-- [ ] Commercial-use wording still points to TWO HANDS NETWORK LTD and its COO-led licensing route
+- [ ] Commercial-use wording still points to TWO HANDS NETWORK LTD and glyn@twohandsnetwork.co.uk

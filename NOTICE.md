@@ -15,7 +15,7 @@ Commercial use requires a separate written license from the licensor. Commercial
 - training, fine-tuning, distilling, evaluating, or improving a commercial AI model or commercial AI system using background-remover source code, documentation, tests, data formats, or derived materials;
 - removing or obscuring copyright, license, attribution, or required notices.
 
-Commercial licensing discussions should be directed to the COO of TWO HANDS NETWORK LTD through the company's official contact channel.
+For commercial licensing, collaboration, information on existing products, or other enquiries, contact Glyn via email at glyn@twohandsnetwork.co.uk.
 
 background-remover was created by Martin Ollett and is owned/licensed by TWO HANDS NETWORK LTD.
 

@@ -55,5 +55,5 @@ npm.cmd run build -- --base=/your-path/
 - Do not commit `dist/`; it is generated output.
 - Do not commit downloaded model blobs under `public/models/background-removal/`.
 - Keep static hosting consistent with the PolyForm Noncommercial public license and required notices.
-- Direct commercial licensing discussions to the COO of TWO HANDS NETWORK LTD through the company's official contact channel.
+- Direct commercial licensing, collaboration, information on existing products, and other enquiries to Glyn via email at glyn@twohandsnetwork.co.uk.
 - GitHub Pages must be enabled in the repository settings before the static build is publicly served.

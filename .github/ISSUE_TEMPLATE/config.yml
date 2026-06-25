@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Commercial licensing and enquiries
+    url: mailto:glyn@twohandsnetwork.co.uk
+    about: Contact Glyn for collaboration, existing products, commercial licensing, or other enquiries.
   - name: Security report
     url: https://github.com/Martin123132/background-remover/security/advisories/new
     about: Report vulnerabilities without exposing sensitive details publicly.

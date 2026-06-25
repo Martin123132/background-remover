@@ -203,4 +203,6 @@ See `ROADMAP.md` for planned work and `CHANGELOG.md` for release history.
 
 PolyForm Noncommercial 1.0.0. See `LICENSE`, `NOTICE.md`, and `COMMERCIAL-LICENSE.md`.
 
-Personal, hobby, research, educational, public-interest, and other non-commercial uses are permitted. Commercial use requires a separate written license from TWO HANDS NETWORK LTD. Commercial licensing discussions should be directed to the COO of TWO HANDS NETWORK LTD through the company's official contact channel.
+Personal, hobby, research, educational, public-interest, and other non-commercial uses are permitted. Commercial use requires a separate written license from TWO HANDS NETWORK LTD.
+
+For commercial licensing, collaboration, information on existing products, or other enquiries, contact Glyn via email at glyn@twohandsnetwork.co.uk.

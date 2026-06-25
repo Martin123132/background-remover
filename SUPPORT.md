@@ -35,4 +35,6 @@ The project should stay:
 
 ## Commercial licensing
 
-Commercial use requires a separate written license from TWO HANDS NETWORK LTD. Licensing discussions should be directed to the COO of TWO HANDS NETWORK LTD through the company's official contact channel.
+Commercial use requires a separate written license from TWO HANDS NETWORK LTD.
+
+For commercial licensing, collaboration, information on existing products, or other enquiries, contact Glyn via email at glyn@twohandsnetwork.co.uk.
