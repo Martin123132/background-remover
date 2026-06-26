@@ -4,7 +4,7 @@
 
 A local-first, source-available background remover for personal and non-commercial product, creator, and marketplace workflows.
 
-[Live demo](https://martin123132.github.io/background-remover/) | [Export presets and scenes](docs/EXPORT_PRESETS.md) | [Commercial licensing](COMMERCIAL-LICENSE.md)
+[Live demo](https://martin123132.github.io/background-remover/) | [Export presets and scenes](docs/EXPORT_PRESETS.md) | [Known limitations](docs/KNOWN_LIMITATIONS.md) | [Commercial licensing](COMMERCIAL-LICENSE.md)
 
 ![Background Remover demo](docs/assets/background-remover-demo.png)
 
@@ -14,6 +14,7 @@ The demo above is a real processed output generated from the repo-local fixture 
 
 - Removes image backgrounds in the browser.
 - Keeps source images local; there is no upload step.
+- Loads a repo-safe sample image so visitors can try the app immediately.
 - Exports transparent PNGs with no watermark.
 - Reviews cutout edges with source/split/cutout modes, zoom-and-pan inspection, mask/edge overlays, and quick backdrop toggles.
 - Adds product-photo backgrounds, marketplace export presets, shadows, and ZIP export.
@@ -93,6 +94,7 @@ npm.cmd run build:github-pages
 npm.cmd run check
 npm.cmd run check:docs-assets
 npm.cmd run qa
+npm.cmd run qa:live
 npm.cmd run capture:demo
 npm.cmd run capture:preset-gallery
 npm.cmd run clean:qa-artifacts
@@ -105,6 +107,8 @@ npm.cmd run clean:qa-artifacts
 `npm.cmd run build:github-pages` builds the static app with `/background-remover/` as the Vite base path for GitHub Pages-style hosting.
 
 `npm.cmd run check:docs-assets` verifies the public fixture, README capture, and preset-gallery captures exist and still have their expected dimensions.
+
+`npm.cmd run qa:live` runs the preview/export regression against the deployed GitHub Pages demo at `https://martin123132.github.io/background-remover/`.
 
 ## Storage rule
 
@@ -205,7 +209,7 @@ docs/assets/                      Safe public screenshots and preset captures
 
 See `CONTRIBUTING.md` for setup, QA, and pull request guidance. See `SUPPORT.md` for useful issue reports. See `SECURITY.md` for vulnerability reporting and the project security goals.
 
-See `ROADMAP.md` for planned work and `CHANGELOG.md` for release history.
+See `ROADMAP.md` for planned work, `docs/KNOWN_LIMITATIONS.md` for current browser/runtime constraints, and `CHANGELOG.md` for release history.
 See `docs/RELEASE_CHECKLIST.md` before tagging or publishing a release.
 
 ## License

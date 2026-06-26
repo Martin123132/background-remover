@@ -26,6 +26,12 @@ For browser-level export coverage, run:
 npm.cmd run qa:preview-export
 ```
 
+For deployed GitHub Pages coverage, run:
+
+```powershell
+npm.cmd run qa:live
+```
+
 The QA command writes artifacts under `D:\open-source\background-remover\.tmp\qa-preview-export\`. Clean them with:
 
 ```powershell

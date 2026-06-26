@@ -16,6 +16,12 @@ This executes:
 - `scripts/qa-preview-export.ps1` (PowerShell runner)
 - `scripts/qa-preview-export.mjs` (Playwright checks)
 
+Run the same regression against the deployed GitHub Pages demo with:
+
+```powershell
+npm.cmd run qa:live
+```
+
 Checks performed:
 
 - Verifies app identity and required UI controls exist.
@@ -82,6 +88,7 @@ npm.cmd run check:docs-assets
 Artifacts go to:
 
 - `D:\open-source\background-remover\test-fixtures\safe-studio-product.png`
+- `D:\open-source\background-remover\public\samples\safe-studio-product.png`
 - `D:\open-source\background-remover\docs\assets\background-remover-demo.png`
 - `D:\open-source\background-remover\docs\assets\preset-transparent-png.png`
 - `D:\open-source\background-remover\docs\assets\preset-marketplace-square.png`

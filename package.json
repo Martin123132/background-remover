@@ -19,6 +19,7 @@
     "capture:demo": "powershell -ExecutionPolicy Bypass -File ./scripts/capture-demo.ps1",
     "capture:preset-gallery": "powershell -ExecutionPolicy Bypass -File ./scripts/capture-preset-gallery.ps1",
     "clean:qa-artifacts": "powershell -ExecutionPolicy Bypass -File ./scripts/clean-qa-artifacts.ps1",
+    "qa:live": "powershell -ExecutionPolicy Bypass -File ./scripts/qa-live.ps1",
     "qa:preview-export": "powershell -ExecutionPolicy Bypass -File ./scripts/qa-preview-export.ps1"
   },
   "dependencies": {

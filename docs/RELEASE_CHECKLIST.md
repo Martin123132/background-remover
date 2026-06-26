@@ -11,6 +11,7 @@ Use this before tagging, publishing a GitHub release, or announcing a public dem
 - `npm.cmd run build:github-pages`
 - `npm.cmd run check`
 - `npm.cmd run qa`
+- `npm.cmd run qa:live`
 
 ## Public surface
 
@@ -19,6 +20,7 @@ Use this before tagging, publishing a GitHub release, or announcing a public dem
 - GitHub Pages deployment workflow passes.
 - Live demo opens at `https://martin123132.github.io/background-remover/`.
 - Live demo can fetch model assets under `/background-remover/models/background-removal/`.
+- Live demo sample-image button loads `public/samples/safe-studio-product.png`.
 - App footer, README, `LICENSE`, `NOTICE.md`, and `COMMERCIAL-LICENSE.md` keep the PolyForm Noncommercial posture.
 - Commercial licensing and enquiries point to Glyn at `glyn@twohandsnetwork.co.uk`.
 

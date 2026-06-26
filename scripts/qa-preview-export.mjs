@@ -246,14 +246,24 @@ async function main() {
       presetCards: await page.locator(".preset-card").count(),
       queueTools: await page.locator(".queue-tool").count(),
       rangeFields: await page.locator(".range-field input").count(),
+      sampleButtons: await page.locator("button", { hasText: "Try sample image" }).count(),
       overlayText: await page.getByText("Failed to compile").count(),
     };
+    const layout = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
     assert(identity.title === "Background Remover", `Unexpected title: ${identity.title}`);
     assert(identity.sceneCards === 5, `Unexpected scene count: ${identity.sceneCards}`);
     assert(identity.presetCards === 6, `Unexpected preset count: ${identity.presetCards}`);
     assert(identity.queueTools >= 7, `Expected at least 7 queue tools, got ${identity.queueTools}`);
     assert(identity.rangeFields === 3, `Unexpected range field count: ${identity.rangeFields}`);
+    assert(identity.sampleButtons === 1, `Unexpected sample button count: ${identity.sampleButtons}`);
     assert(identity.overlayText === 0, "Framework error overlay detected.");
+    assert(
+      layout.scrollWidth <= layout.clientWidth + 1,
+      `Unexpected horizontal overflow: ${layout.scrollWidth}px content in ${layout.clientWidth}px viewport.`
+    );
     assert(
       (await page.locator('button', { hasText: "Reset preferences" }).count()) > 0,
       "Reset preferences control missing."
@@ -275,6 +285,31 @@ async function main() {
     assert(defaults.sliders?.blur?.max === QA_SHADOW_SLIDERS.blur.max, "Missing shadow blur slider max.");
     assert(defaults.sliders?.offset?.min === QA_SHADOW_SLIDERS.offset.min, "Missing shadow offset slider min.");
     assert(defaults.sliders?.offset?.max === QA_SHADOW_SLIDERS.offset.max, "Missing shadow offset slider max.");
+
+    await page.locator("button", { hasText: "Try sample image" }).click();
+    await page.locator(".queue-item", { hasText: "safe-studio-product.png" }).waitFor({
+      state: "visible",
+      timeout: 30000,
+    });
+    await page.locator(".source-only").waitFor({ state: "visible", timeout: 10000 });
+    const sampleJobCount = await page.locator(".queue-item").count();
+    assert(sampleJobCount === 1, `Expected one sample queue item, got ${sampleJobCount}.`);
+
+    let clearQueueAccepted = false;
+    const onClearQueueDialog = (dialog) => {
+      clearQueueAccepted = true;
+      void dialog.accept();
+    };
+    page.on("dialog", onClearQueueDialog);
+    await page.getByRole("button", { name: "Clear queue" }).click();
+    try {
+      await page.waitForFunction(() => document.querySelectorAll(".queue-item").length === 0, {
+        timeout: 10000,
+      });
+    } finally {
+      page.off("dialog", onClearQueueDialog);
+    }
+    assert(clearQueueAccepted, "Expected clear queue confirmation after sample test.");
 
     await page.locator('input[type="file"]').setInputFiles(qaInputImages);
     const processButton = page.getByRole("button", { name: "Remove backgrounds" });

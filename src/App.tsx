@@ -132,6 +132,8 @@ const DEFAULT_UI_SETTINGS: Required<StoredUISettings> = {
 };
 const EXPORT_LOG_STORAGE_KEY = "background-remover-export-log-v1";
 const EXPORT_LOG_LIMIT = 25;
+const SAMPLE_IMAGE_PATH = "samples/safe-studio-product.png";
+const SAMPLE_IMAGE_FILENAME = "safe-studio-product.png";
 
 type ExportLogItem = {
   id: string;
@@ -568,6 +570,10 @@ function revokeObjectUrlSoon(url?: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
+function publicAssetUrl(path: string): string {
+  return new URL(`${import.meta.env.BASE_URL}${path}`, window.location.href).href;
+}
+
 function App() {
   useEffect(() => {
     publishUiDefaultsToWindow();
@@ -594,6 +600,8 @@ function App() {
   const [reviewOverlay, setReviewOverlay] = useState<ReviewOverlaySelection>("none");
   const [isZipping, setIsZipping] = useState(false);
   const [isExportingSelected, setIsExportingSelected] = useState(false);
+  const [isLoadingSample, setIsLoadingSample] = useState(false);
+  const [sampleError, setSampleError] = useState<string>();
   const [exportLog, setExportLog] = useState<ExportLogItem[]>(() => readExportLogFromStorage());
   const [exportPresetId, setExportPresetId] = useState<ExportPresetId>(
     persistedSettings.exportPresetId ?? DEFAULT_UI_SETTINGS.exportPresetId
@@ -886,6 +894,31 @@ function App() {
     const nextJobs = files.map(createJob);
     setJobs((current) => [...nextJobs, ...current]);
     setSelectedId(nextJobs[0].id);
+  };
+
+  const addSampleImage = async () => {
+    if (hasProcessingJobs || isLoadingSample) return;
+
+    setSampleError(undefined);
+    setIsLoadingSample(true);
+
+    try {
+      const response = await fetch(publicAssetUrl(SAMPLE_IMAGE_PATH));
+      if (!response.ok) {
+        throw new Error(`Sample image request failed with ${response.status}.`);
+      }
+
+      const blob = await response.blob();
+      const file = new File([blob], SAMPLE_IMAGE_FILENAME, {
+        lastModified: Date.now(),
+        type: blob.type || "image/png",
+      });
+      addFiles([file]);
+    } catch {
+      setSampleError("Sample image could not be loaded.");
+    } finally {
+      setIsLoadingSample(false);
+    }
   };
 
   const updateJob = (id: string, patch: Partial<ImageJob>) => {
@@ -1273,6 +1306,18 @@ function App() {
           </div>
 
           <Dropzone disabled={stats.processing > 0} onFiles={addFiles} />
+          <div className="sample-actions">
+            <button
+              className="sample-button"
+              disabled={hasProcessingJobs || isLoadingSample}
+              onClick={addSampleImage}
+              type="button"
+            >
+              {isLoadingSample ? <Loader2 className="spin" size={17} /> : <Sparkles size={17} />}
+              Try sample image
+            </button>
+            {sampleError ? <small role="alert">{sampleError}</small> : null}
+          </div>
 
           <section className="panel-section">
             <h2>Model</h2>

@@ -7,6 +7,7 @@ const projectRoot = path.resolve(__dirname, "..");
 
 const expectedAssets = [
   ["test-fixtures/safe-studio-product.png", 900, 900],
+  ["public/samples/safe-studio-product.png", 900, 900],
   ["docs/assets/background-remover-demo.png", 1440, 1000],
   ["docs/assets/preset-transparent-png.png", 600, 600],
   ["docs/assets/preset-marketplace-square.png", 600, 600],

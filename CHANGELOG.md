@@ -30,6 +30,9 @@ All notable changes to this project will be documented here.
 - Add GitHub Pages deployment workflow and live-demo documentation.
 - Add a generated safe studio fixture for clearer public demo and preset captures.
 - Add a public release checklist for Pages, licensing, QA, and artifact checks.
+- Add a sample-image button for the live demo.
+- Add a live GitHub Pages QA command.
+- Document current browser, performance, and edge-refinement limitations.
 
 ## 0.1.0 - 2026-06-22
 

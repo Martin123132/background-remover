@@ -35,6 +35,12 @@ The background-removal model path follows Vite's base path by default, so static
 /background-remover/models/background-removal/
 ```
 
+The app also serves the repo-safe sample image from:
+
+```text
+/background-remover/samples/safe-studio-product.png
+```
+
 ## GitHub Pages deployment
 
 The repository includes `.github/workflows/pages.yml`, which deploys the static app from GitHub Actions when `master` changes or when the workflow is run manually. It:
@@ -67,3 +73,4 @@ npm.cmd run build -- --base=/your-path/
 - Keep static hosting consistent with the PolyForm Noncommercial public license and required notices.
 - Direct commercial licensing, collaboration, information on existing products, and other enquiries to Glyn via email at glyn@twohandsnetwork.co.uk.
 - GitHub Pages must be set to GitHub Actions/workflow mode before the static build is publicly served.
+- GitHub Pages does not provide cross-origin isolation headers, so the live demo can fall back to single-threaded WebAssembly.

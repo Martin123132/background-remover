@@ -5,7 +5,10 @@ import zlib from "node:zlib";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
-const outputPath = path.join(projectRoot, "test-fixtures", "safe-studio-product.png");
+const outputPaths = [
+  path.join(projectRoot, "test-fixtures", "safe-studio-product.png"),
+  path.join(projectRoot, "public", "samples", "safe-studio-product.png"),
+];
 const width = 900;
 const height = 900;
 const pixels = new Uint8ClampedArray(width * height * 4);
@@ -152,7 +155,10 @@ drawRoundedRect(365, 310, 44, 230, 26, color("#ffffff"), 0.2);
 drawRoundedRect(352, 198, 196, 62, 22, color("#101820"));
 drawEllipse(450, 198, 98, 22, color("#2b3338"));
 
-fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-fs.writeFileSync(outputPath, encodePng());
+const output = encodePng();
+for (const outputPath of outputPaths) {
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, output);
+}
 
-console.log(JSON.stringify({ ok: true, outputPath, width, height }, null, 2));
+console.log(JSON.stringify({ ok: true, outputPaths, width, height }, null, 2));

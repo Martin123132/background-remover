@@ -203,6 +203,7 @@ a {
 .dropzone-button,
 .primary-button,
 .secondary-button,
+.sample-button,
 .ghost-button {
   display: inline-flex;
   align-items: center;
@@ -232,6 +233,26 @@ a {
   padding: 0 14px;
 }
 
+.sample-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.sample-button {
+  width: 100%;
+  color: #173c3e;
+  background: #e6f2f1;
+  border: 1px solid rgba(30, 109, 112, 0.18);
+  padding: 0 14px;
+}
+
+.sample-actions small {
+  color: #9c3f2d;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .ghost-button {
   color: #3e3934;
   background: rgba(255, 252, 246, 0.8);
@@ -242,13 +263,15 @@ a {
 .primary-button:hover,
 .secondary-button:hover,
 .ghost-button:hover,
-.dropzone-button:hover {
+.dropzone-button:hover,
+.sample-button:hover {
   transform: translateY(-1px);
 }
 
 .primary-button:disabled,
 .secondary-button:disabled,
-.ghost-button:disabled {
+.ghost-button:disabled,
+.sample-button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
   transform: none;
@@ -1045,7 +1068,7 @@ a {
 
 .queue-filters {
   display: grid;
-  grid-template-columns: repeat(5, minmax(68px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(82px, 1fr));
   gap: 6px;
   margin-top: 12px;
 }
