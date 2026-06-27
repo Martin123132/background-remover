@@ -33,6 +33,7 @@ All notable changes to this project will be documented here.
 - Add a sample-image button for the live demo.
 - Add a live GitHub Pages QA command.
 - Document current browser, performance, and edge-refinement limitations.
+- Add draft release notes and update the roadmap around the live demo.
 
 ## 0.1.0 - 2026-06-22
 

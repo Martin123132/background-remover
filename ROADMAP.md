@@ -8,11 +8,13 @@ This roadmap favors local-first workflows that can replace credit-based backgrou
 - Preserve the D-drive storage rule for local development and QA artifacts.
 - Keep batch processing easy to trust with clear queue state and export feedback.
 - Keep zoom, pan, mask, and edge preview review practical for edge-quality checks before export.
-- Keep public demo assets reproducible from safe repo fixtures.
+- Keep the GitHub Pages demo, public sample image, and demo captures reproducible from safe repo fixtures.
+- Keep the live demo covered by `npm.cmd run qa:live` before release announcements.
 
 ## Next
 
-- Add optional hosted demo once GitHub Pages is enabled in repository settings.
+- Finish first public release notes and tag only after explicit release approval.
+- Do a focused manual browser pass across current Chromium, Edge, and Firefox.
 - Add more marketplace and creator preset packs based on real repeated workflows.
 
 ## Later
