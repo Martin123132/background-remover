@@ -1,8 +1,6 @@
-# Draft Release Notes
+# Background Remover 0.2.0 Release Notes
 
-These notes are a working draft for the next public release. Do not tag, publish, or announce a release until the final version number and notes are approved.
-
-## Background Remover 0.2.0 draft
+Release date: 2026-06-27
 
 Background Remover is a local-first, browser-based background remover for personal and non-commercial product, creator, and marketplace workflows. It removes backgrounds, composes product-photo outputs, and exports clean PNG/ZIP results without uploading source images or adding watermarks.
 
@@ -21,9 +19,9 @@ Background Remover is a local-first, browser-based background remover for person
 
 The README screenshot, preset gallery, and public sample image are generated from safe repo-local fixtures. No private or personal source images are required for the public demo.
 
-### Validation before release
+### Validation
 
-Run these from `D:\open-source\background-remover`:
+The release was prepared with these checks from `D:\open-source\background-remover`:
 
 ```powershell
 npm.cmd run fixtures:generate
@@ -36,14 +34,14 @@ npm.cmd run qa
 npm.cmd run qa:live
 ```
 
-GitHub Actions should also show passing `CI` and `Deploy GitHub Pages` runs on `master`.
+GitHub Actions should show passing `CI` and `Deploy GitHub Pages` runs on `master`.
 
 ### Known limitations
 
 - GitHub Pages does not provide cross-origin isolation headers, so the live demo can fall back to single-threaded WebAssembly.
 - Very large images can take longer and may use significant browser memory.
 - Manual brush-based mask editing is not included yet.
-- Modern Chromium-family browsers are the best-tested path; Firefox and Edge should receive a manual pass before a public announcement.
+- Modern Chromium-family browsers are the best-tested path; Firefox has lighter manual coverage in this release.
 
 ### Licensing
 

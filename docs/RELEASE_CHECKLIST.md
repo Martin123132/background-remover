@@ -17,7 +17,7 @@ Use this before tagging, publishing a GitHub release, or announcing a public dem
 
 - README demo image uses only repo-safe fixtures.
 - Preset gallery images are regenerated from repo-safe fixtures.
-- `docs/RELEASE_NOTES_DRAFT.md` has been reviewed and copied into final release notes.
+- The versioned release notes have been reviewed and copied into the GitHub release.
 - GitHub Pages deployment workflow passes.
 - Live demo opens at `https://martin123132.github.io/background-remover/`.
 - Live demo can fetch model assets under `/background-remover/models/background-removal/`.

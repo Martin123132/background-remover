@@ -13,7 +13,7 @@ This roadmap favors local-first workflows that can replace credit-based backgrou
 
 ## Next
 
-- Finish first public release notes and tag only after explicit release approval.
+- Keep release notes and changelog aligned before future tags.
 - Do a focused manual browser pass across current Chromium, Edge, and Firefox.
 - Add more marketplace and creator preset packs based on real repeated workflows.
 

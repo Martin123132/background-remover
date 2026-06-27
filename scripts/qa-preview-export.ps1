@@ -1,39 +1,30 @@
 $ErrorActionPreference = "Stop"
 
 . "$PSScriptRoot\env.ps1"
+. "$PSScriptRoot\app-server.ps1"
 
-$qaUrl = if ($env:BACKGROUND_REMOVER_QA_URL) {
+$previousQaUrl = $env:BACKGROUND_REMOVER_QA_URL
+$hasExplicitQaUrl = -not [string]::IsNullOrWhiteSpace($env:BACKGROUND_REMOVER_QA_URL)
+$qaUrl = if ($hasExplicitQaUrl) {
   $env:BACKGROUND_REMOVER_QA_URL
 } else {
-  "http://127.0.0.1:5175/"
+  Resolve-BackgroundRemoverLocalUrl -PreferredUrl "http://127.0.0.1:5175/"
 }
 
 $serverProcess = $null
 $serverLog = Join-Path $script:ProjectRoot ".tmp\qa-preview-export-server.log"
 $serverErr = Join-Path $script:ProjectRoot ".tmp\qa-preview-export-server.err.log"
 
-function Test-QAUrl {
-  try {
-    $response = Invoke-WebRequest -UseBasicParsing -Uri $qaUrl -TimeoutSec 3
-    return $response.StatusCode -ge 200 -and $response.StatusCode -lt 500
-  } catch {
-    return $false
-  }
-}
-
 try {
-  if (-not (Test-QAUrl)) {
-    $serverProcess = Start-Process `
-      -FilePath "npm.cmd" `
-      -ArgumentList @("run", "dev", "--", "--port", "5175") `
-      -WorkingDirectory $script:ProjectRoot `
-      -WindowStyle Hidden `
-      -RedirectStandardOutput $serverLog `
-      -RedirectStandardError $serverErr `
-      -PassThru
+  if (-not (Test-BackgroundRemoverUrl -Url $qaUrl)) {
+    if ($hasExplicitQaUrl) {
+      throw "Configured BACKGROUND_REMOVER_QA_URL does not serve Background Remover: $qaUrl"
+    }
+
+    $serverProcess = Start-BackgroundRemoverDevServer -Url $qaUrl -StdOutPath $serverLog -StdErrPath $serverErr
 
     $deadline = (Get-Date).AddSeconds(60)
-    while (-not (Test-QAUrl)) {
+    while (-not (Test-BackgroundRemoverUrl -Url $qaUrl)) {
       if ((Get-Date) -gt $deadline) {
         throw "Timed out waiting for QA server at $qaUrl. See $serverLog and $serverErr."
       }
@@ -41,11 +32,18 @@ try {
     }
   }
 
+  $env:BACKGROUND_REMOVER_QA_URL = $qaUrl
   node (Join-Path $script:ProjectRoot "scripts\qa-preview-export.mjs")
   if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
   }
 } finally {
+  if ($null -eq $previousQaUrl) {
+    Remove-Item Env:\BACKGROUND_REMOVER_QA_URL -ErrorAction SilentlyContinue
+  } else {
+    $env:BACKGROUND_REMOVER_QA_URL = $previousQaUrl
+  }
+
   if ($serverProcess -and -not $serverProcess.HasExited) {
     Stop-Process -Id $serverProcess.Id -Force
   }

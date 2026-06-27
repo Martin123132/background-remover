@@ -4,6 +4,10 @@ All notable changes to this project will be documented here.
 
 ## Unreleased
 
+- No unreleased changes yet.
+
+## 0.2.0 - 2026-06-27
+
 - Replace desktop-only QA fixture with a safe repo-local product PNG.
 - Replace illustrative README graphic with a real app screenshot capture.
 - Add a repeatable demo screenshot capture command.
@@ -33,7 +37,7 @@ All notable changes to this project will be documented here.
 - Add a sample-image button for the live demo.
 - Add a live GitHub Pages QA command.
 - Document current browser, performance, and edge-refinement limitations.
-- Add draft release notes and update the roadmap around the live demo.
+- Add release notes and update the roadmap around the live demo.
 
 ## 0.1.0 - 2026-06-22
 

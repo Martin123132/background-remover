@@ -4,7 +4,7 @@
 
 A local-first, source-available background remover for personal and non-commercial product, creator, and marketplace workflows.
 
-[Live demo](https://martin123132.github.io/background-remover/) | [Export presets and scenes](docs/EXPORT_PRESETS.md) | [Known limitations](docs/KNOWN_LIMITATIONS.md) | [Release notes draft](docs/RELEASE_NOTES_DRAFT.md) | [Commercial licensing](COMMERCIAL-LICENSE.md)
+[Live demo](https://martin123132.github.io/background-remover/) | [Export presets and scenes](docs/EXPORT_PRESETS.md) | [Known limitations](docs/KNOWN_LIMITATIONS.md) | [Release notes](docs/RELEASE_NOTES_0.2.0.md) | [Commercial licensing](COMMERCIAL-LICENSE.md)
 
 ![Background Remover demo](docs/assets/background-remover-demo.png)
 
@@ -210,7 +210,7 @@ docs/assets/                      Safe public screenshots and preset captures
 
 See `CONTRIBUTING.md` for setup, QA, and pull request guidance. See `SUPPORT.md` for useful issue reports. See `SECURITY.md` for vulnerability reporting and the project security goals.
 
-See `ROADMAP.md` for planned work, `docs/KNOWN_LIMITATIONS.md` for current browser/runtime constraints, `docs/RELEASE_NOTES_DRAFT.md` for the next release draft, and `CHANGELOG.md` for release history.
+See `ROADMAP.md` for planned work, `docs/KNOWN_LIMITATIONS.md` for current browser/runtime constraints, `docs/RELEASE_NOTES_0.2.0.md` for the latest release notes, and `CHANGELOG.md` for release history.
 See `docs/RELEASE_CHECKLIST.md` before tagging or publishing a release.
 
 ## License
